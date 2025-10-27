@@ -6,7 +6,7 @@
         "php": ">=8.4",
         "friendsofphp/php-cs-fixer": "*",
         "symfony/finder": "*",
-        "valksor/functions-preg": "^1.0"
+        "valksor/php-functions-preg": "^1.0"
     },
     "conflict": {
         "friendsofphp/php-cs-fixer": "<3.81.0"

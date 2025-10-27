@@ -26,7 +26,7 @@ A comprehensive PHP library providing custom fixers for PHP-CS-Fixer to enhance 
 Install the package via Composer:
 
 ```bash
-composer require valksor/php-cs-fixer-custom-fixers --dev
+composer require valksor/php-dev-cs-fixer-custom-fixers --dev
 ```
 
 ## Requirements
@@ -34,7 +34,7 @@ composer require valksor/php-cs-fixer-custom-fixers --dev
 - **PHP 8.4 or higher**
 - **friendsofphp/php-cs-fixer** (3.81.0 or higher)
 - **symfony/finder** (7.0 or higher)
-- **valksor/functions-preg** (^1.0)
+- **valksor/php-functions-preg** (^1.0)
 
 ### Optional Dependencies
 
@@ -167,7 +167,7 @@ This package is licensed under the [BSD-3-Clause License](LICENSE).
 
 ## About Valksor
 
-This package is part of the [valksor/valksor](https://github.com/valksor/valksor) project - a comprehensive PHP library and Symfony bundle that provides a collection of utilities, components, and integrations for Symfony applications.
+This package is part of the [valksor/php-dev](https://github.com/valksor/valksor-dev) project - a comprehensive PHP library and Symfony bundle that provides a collection of utilities, components, and integrations for Symfony applications.
 
 The main project includes:
 - Various utility functions and components
@@ -180,5 +180,5 @@ If you find these custom fixers useful, you might want to check out the full Val
 To install the complete package:
 
 ```bash
-composer require valksor/valksor
+composer require valksor/php-dev
 ```
