@@ -147,21 +147,6 @@ The toolkit integrates seamlessly with modern Symfony development workflows:
 - **Import Maps**: Automatic JavaScript import map generation and synchronization
 - **Code Quality**: Enhanced PHP-CS-Fixer with modern PHP 8.4+ best practices
 
-## Testing
-
-Run the test suite:
-
-```bash
-# Run all tests
-composer test
-
-# Run specific component tests
-composer test:build
-composer test:fixers
-
-# Generate code coverage
-composer test:coverage
-```
 
 ## Contributing
 

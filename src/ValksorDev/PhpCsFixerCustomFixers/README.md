@@ -166,21 +166,6 @@ Removes unnecessary `strlen()` calls when used in comparisons.
 
 Converts traditional constructor property assignments to promoted properties (PHP 8.0+).
 
-## Testing
-
-Run the test suite for the custom fixers:
-
-```bash
-# Run all tests
-vendor/bin/phpunit
-
-# Run tests with coverage
-vendor/bin/phpunit --coverage-text
-
-# Run specific test suites
-vendor/bin/phpunit tests/Fixer/
-vendor/bin/phpunit tests/Analyzer/
-```
 
 ## Contributing
 
