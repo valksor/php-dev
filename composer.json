@@ -3,10 +3,22 @@
     "license": "BSD-3-Clause",
     "type": "library",
     "require": {
-        "php": ">=8.4"
+        "php": ">=8.4",
+        "ext-inotify": "*",
+        "ext-pcntl": "*",
+        "ext-posix": "*",
+        "friendsofphp/php-cs-fixer": "*",
+        "symfony/config": "*",
+        "symfony/console": "*",
+        "symfony/dependency-injection": "*",
+        "symfony/finder": "*",
+        "symfony/process": "*",
+        "valksor/php-bundle": "^1.0",
+        "valksor/php-functions-local": "^1.0",
+        "valksor/php-functions-preg": "^1.0",
+        "valksor/php-sse": "^1.0"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "*",
         "roave/security-advisories": "dev-latest"
     },
     "replace": {

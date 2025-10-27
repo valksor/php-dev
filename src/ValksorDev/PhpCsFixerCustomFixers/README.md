@@ -1,5 +1,10 @@
 # Valksor PHP-CS-Fixer Custom Fixers
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/valksor/php-dev-cs-fixer-custom-fixers.svg)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
+[![Total Downloads](https://img.shields.io/packagist/dt/valksor/php-dev-cs-fixer-custom-fixers.svg)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
+[![License](https://img.shields.io/packagist/l/valksor/php-dev-cs-fixer-custom-fixers.svg)](LICENSE)
+[![PHP Version Require](https://img.shields.io/packagist/require-v/valksor/php-dev-cs-fixer-custom-fixers/php)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
+
 A comprehensive PHP library providing custom fixers for PHP-CS-Fixer to enhance code quality, enforce modern coding standards, and improve development workflow efficiency.
 
 ## Use Cases
@@ -160,6 +165,81 @@ Removes unnecessary `strlen()` calls when used in comparisons.
 ### PromotedConstructorPropertyFixer
 
 Converts traditional constructor property assignments to promoted properties (PHP 8.0+).
+
+## Testing
+
+Run the test suite for the custom fixers:
+
+```bash
+# Run all tests
+vendor/bin/phpunit
+
+# Run tests with coverage
+vendor/bin/phpunit --coverage-text
+
+# Run specific test suites
+vendor/bin/phpunit tests/Fixer/
+vendor/bin/phpunit tests/Analyzer/
+```
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on:
+
+- Code style requirements (PSR-12)
+- Testing requirements for PRs
+- One feature per pull request
+- Development setup instructions
+
+To contribute to the custom fixers:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-fixer`)
+3. Implement your custom fixer following the existing patterns
+4. Add comprehensive tests for your fixer
+5. Ensure all tests pass and code style is correct
+6. Submit a pull request
+
+### Creating a New Custom Fixer
+
+When adding a new custom fixer:
+
+1. Extend the appropriate base class:
+   ```php
+   use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\AbstractFixer;
+
+   class YourCustomFixer extends AbstractFixer
+   {
+       // Implement required methods
+   }
+   ```
+
+2. Add comprehensive test coverage in `tests/Fixer/YourCustomFixerTest.php`
+
+3. Register the fixer in `src/ValksorDev/PhpCsFixerCustomFixers/Fixers.php`
+
+4. Update documentation with examples
+
+## Security
+
+If you discover any security-related issues, please email us at security@valksor.dev instead of using the issue tracker.
+
+For security policy and vulnerability reporting guidelines, please see our [Security Policy](SECURITY.md).
+
+## Support
+
+- **Documentation**: [Full documentation](https://github.com/valksor/valksor-dev)
+- **Issues**: [GitHub Issues](https://github.com/valksor/valksor-dev/issues) for bug reports and feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/valksor/valksor-dev/discussions) for questions and community support
+- **Stack Overflow**: Use tag `valksor-php-dev`
+- **PHP-CS-Fixer Documentation**: [Official docs](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
+
+## Credits
+
+- **[Original Author](https://github.com/valksor)** - Creator and maintainer
+- **[All Contributors](https://github.com/valksor/valksor-dev/graphs/contributors)** - Thank you to all who contributed
+- **[PHP-CS-Fixer Project](https://github.com/FriendsOfPHP/PHP-CS-Fixer)** - Core framework and inspiration
+- **[Valksor Project](https://github.com/valksor)** - Part of the larger Valksor PHP ecosystem
 
 ## License
 
