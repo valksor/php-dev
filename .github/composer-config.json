@@ -1,0 +1,9 @@
+{
+    "config": {
+        "platform-check": false,
+        "preferred-install": {
+            "valksor/*": "source",
+            "*": "dist"
+        }
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "name": "valksor/php-dev",
+    "license": "BSD-3-Clause",
+    "type": "library",
+    "require": {
+        "php": ">=8.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "*",
+        "roave/security-advisories": "dev-latest"
+    },
+    "replace": {
+        "valksor/php-dev-build": "self.version",
+        "valksor/php-dev-cs-fixer-custom-fixers": "self.version",
+        "valksor/php-dev-snapshot": "self.version"
+    },
+    "conflict": {
+        "doctrine/dbal": "<4.0",
+        "friendsofphp/php-cs-fixer": "<3.81.0",
+        "symfony/framework-bundle": "<7.2.0"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": false,
+    "autoload": {
+        "psr-4": {
+            "Valksor\\": "src/ValksorDev/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}
