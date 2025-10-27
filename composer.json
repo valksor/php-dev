@@ -11,8 +11,7 @@
     },
     "replace": {
         "valksor/php-dev-build": "self.version",
-        "valksor/php-dev-cs-fixer-custom-fixers": "self.version",
-        "valksor/php-dev-snapshot": "self.version"
+        "valksor/php-dev-cs-fixer-custom-fixers": "self.version"
     },
     "conflict": {
         "doctrine/dbal": "<4.0",
@@ -23,7 +22,7 @@
     "prefer-stable": false,
     "autoload": {
         "psr-4": {
-            "Valksor\\": "src/ValksorDev/"
+            "ValksorDev\\": "src/ValksorDev/"
         }
     },
     "config": {
