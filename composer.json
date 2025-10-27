@@ -1,7 +1,20 @@
 {
     "name": "valksor/php-dev",
+    "description": "Development tools and utilities for PHP projects including build automation, file watching, and custom PHP-CS-Fixer rules",
     "license": "BSD-3-Clause",
     "type": "library",
+    "keywords": [
+        "php",
+        "development",
+        "tools",
+        "build",
+        "automation",
+        "php-cs-fixer",
+        "code-style",
+        "watching",
+        "dev-tools"
+    ],
+    "homepage": "https://github.com/valksor/php-valksor",
     "require": {
         "php": ">=8.4",
         "ext-inotify": "*",

@@ -1,7 +1,20 @@
 {
     "name": "valksor/php-dev-cs-fixer-custom-fixers",
+    "description": "Custom PHP-CS-Fixer rules for automated code style enforcement including Doctrine migration files and project-specific standards",
     "license": "BSD-3-Clause",
     "type": "library",
+    "keywords": [
+        "php",
+        "php-cs-fixer",
+        "code-style",
+        "coding-standards",
+        "static-analysis",
+        "automation",
+        "tools",
+        "valksor",
+        "fixers"
+    ],
+    "homepage": "https://github.com/valksor/php-valksor",
     "require": {
         "php": ">=8.4",
         "friendsofphp/php-cs-fixer": "*",
