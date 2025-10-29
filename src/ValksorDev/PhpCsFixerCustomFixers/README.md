@@ -169,8 +169,6 @@ Converts traditional constructor property assignments to promoted properties (PH
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on:
-
 - Code style requirements (PSR-12)
 - Testing requirements for PRs
 - One feature per pull request
@@ -208,8 +206,6 @@ When adding a new custom fixer:
 ## Security
 
 If you discover any security-related issues, please email us at security@valksor.dev instead of using the issue tracker.
-
-For security policy and vulnerability reporting guidelines, please see our [Security Policy](SECURITY.md).
 
 ## Support
 

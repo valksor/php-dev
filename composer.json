@@ -14,12 +14,15 @@
         "watching",
         "dev-tools"
     ],
-    "homepage": "https://github.com/valksor/php-valksor",
+    "homepage": "https://github.com/valksor/php-dev",
     "require": {
         "php": ">=8.4",
+        "ext-dom": "*",
         "ext-inotify": "*",
+        "ext-mbstring": "*",
         "ext-pcntl": "*",
         "ext-posix": "*",
+        "ext-zip": "*",
         "friendsofphp/php-cs-fixer": "*",
         "symfony/config": "*",
         "symfony/console": "*",
@@ -41,7 +44,7 @@
     "conflict": {
         "doctrine/dbal": "<4.0",
         "friendsofphp/php-cs-fixer": "<3.81.0",
-        "symfony/framework-bundle": "<7.2.0"
+        "symfony/framework-bundle": "<7.4.0"
     },
     "minimum-stability": "dev",
     "prefer-stable": false,

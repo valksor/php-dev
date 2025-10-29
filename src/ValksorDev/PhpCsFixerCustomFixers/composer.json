@@ -14,7 +14,7 @@
         "valksor",
         "fixers"
     ],
-    "homepage": "https://github.com/valksor/php-valksor",
+    "homepage": "https://github.com/valksor/php-dev",
     "require": {
         "php": ">=8.4",
         "friendsofphp/php-cs-fixer": "*",
