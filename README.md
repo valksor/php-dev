@@ -1,10 +1,5 @@
 # Valksor PHP Dev
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/valksor/php-dev.svg)](https://packagist.org/packages/valksor/php-dev)
-[![Total Downloads](https://img.shields.io/packagist/dt/valksor/php-dev.svg)](https://packagist.org/packages/valksor/php-dev)
-[![License](https://img.shields.io/packagist/l/valksor/php-dev.svg)](LICENSE)
-[![PHP Version Require](https://img.shields.io/packagist/require-v/valksor/php-dev/php)](https://packagist.org/packages/valksor/php-dev)
-
 A comprehensive PHP development toolkit that provides modern development tools, custom PHP-CS-Fixer fixers, build automation, and hot reloading capabilities for Symfony applications. This library enhances development workflow efficiency with integrated tooling for frontend builds, code quality, and real-time development features.
 
 ## Features

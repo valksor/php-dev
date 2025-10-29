@@ -1,10 +1,5 @@
 # Valksor PHP-CS-Fixer Custom Fixers
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/valksor/php-dev-cs-fixer-custom-fixers.svg)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
-[![Total Downloads](https://img.shields.io/packagist/dt/valksor/php-dev-cs-fixer-custom-fixers.svg)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
-[![License](https://img.shields.io/packagist/l/valksor/php-dev-cs-fixer-custom-fixers.svg)](LICENSE)
-[![PHP Version Require](https://img.shields.io/packagist/require-v/valksor/php-dev-cs-fixer-custom-fixers/php)](https://packagist.org/packages/valksor/php-dev-cs-fixer-custom-fixers)
-
 A comprehensive PHP library providing custom fixers for PHP-CS-Fixer to enhance code quality, enforce modern coding standards, and improve development workflow efficiency.
 
 ## Use Cases
