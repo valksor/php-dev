@@ -35,7 +35,8 @@
         "valksor/php-sse": "^1.0"
     },
     "require-dev": {
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "phpunit/phpunit": "^12.0"
     },
     "replace": {
         "valksor/php-dev-build": "self.version",

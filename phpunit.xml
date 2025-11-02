@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    cacheDirectory=".phpunit.cache"
+    executionOrder="depends,random"
+    beStrictAboutOutputDuringTests="true"
+    beStrictAboutCoverageMetadata="true"
+    controlGarbageCollector="true"
+>
+
+    <php>
+        <ini name="memory_limit" value="-1" />
+    </php>
+
+    <testsuites>
+        <testsuite name="Valksor Complete">
+            <!-- Function library tests -->
+            <!-- Add more test directories as they are created:
+            <directory>src/ValksorDev/Build/Tests</directory>
+            <directory>src/ValksorDev/PhpCsFixerCustomFixers/Tests</directory>
+            -->
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>src/Valksor</directory>
+        </include>
+        <exclude>
+            <directory>.coverage</directory>
+            <directory>.github</directory>
+            <directory>.phpunit.cache</directory>
+            <directory>core</directory>
+            <directory>src/ValksorDev/**/.coverage</directory>
+            <directory>src/ValksorDev/**/.github</directory>
+            <directory>src/ValksorDev/**/.phpunit.cache</directory>
+            <directory>src/ValksorDev/**/Resources</directory>
+            <directory>src/ValksorDev/**/Tests</directory>
+            <directory>src/ValksorDev/**/docs</directory>
+            <directory>src/ValksorDev/**/recipe</directory>
+            <directory>src/ValksorDev/**/var</directory>
+            <directory>src/ValksorDev/**/vendor</directory>
+            <directory>vendor</directory>
+        </exclude>
+    </source>
+
+    <coverage
+        ignoreDeprecatedCodeUnits="true"
+        disableCodeCoverageIgnore="true"
+    >
+        <report>
+            <clover outputFile=".coverage/clover.xml"/>
+            <cobertura outputFile=".coverage/cobertura.xml"/>
+            <crap4j outputFile=".coverage/crap4j.xml"/>
+            <html outputDirectory=".coverage"/>
+            <text outputFile=".coverage/coverage.txt"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile=".coverage/junit.xml"/>
+        <testdoxHtml outputFile=".coverage/testdox.html"/>
+        <testdoxText outputFile=".coverage/testdox.txt"/>
+    </logging>
+</phpunit>
