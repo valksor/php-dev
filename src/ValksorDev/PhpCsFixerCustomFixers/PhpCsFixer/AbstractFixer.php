@@ -23,6 +23,7 @@ use SplFileInfo;
 use Valksor\Functions\Preg;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer\Analyzer;
 
+use function array_filter;
 use function array_map;
 use function array_pop;
 use function assert;

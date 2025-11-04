@@ -19,9 +19,11 @@ use SplFileInfo;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\AbstractFixer;
 
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_pad;
 use function array_slice;
+use function assert;
 use function count;
 use function explode;
 use function implode;
@@ -127,6 +129,8 @@ final class LineBreakBetweenStatementsFixer extends AbstractFixer
         if (null === $nextMeaningful) {
             return;
         }
+
+        assert(null !== $nextMeaningful);
 
         if (!array_key_exists($tokens[$nextMeaningful]->getId(), self::HANDLERS)) {
             return;

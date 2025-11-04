@@ -28,6 +28,9 @@ use function assert;
 use function count;
 use function in_array;
 use function is_int;
+use function krsort;
+use function strtolower;
+use function substr;
 
 use const T_CLASS;
 use const T_COMMENT;
