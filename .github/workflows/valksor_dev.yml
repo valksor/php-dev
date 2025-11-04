@@ -5,14 +5,9 @@ on:
     pull_request:
 
 jobs:
-    tests:
-        name: Tests on PHP ${{ matrix.php-version }}
-        runs-on: ubuntu-latest
-
-        strategy:
-            fail-fast: false
-            matrix:
-                php-version: [ '8.4', '8.5', '8.6' ]
+    upload-codecov:
+        name: Upload coverage to Codecov
+        runs-on: self-arm
 
         steps:
             # https://github.com/marketplace/actions/checkout
@@ -21,46 +16,8 @@ jobs:
                 with:
                     fetch-depth: 0
 
-            # https://github.com/marketplace/actions/setup-php-action
-            -   name: Setup PHP
-                uses: shivammathur/setup-php@v2
-                with:
-                    php-version: ${{ matrix.php-version }}
-                    extensions: mbstring, xml, json, iconv, dom, simplexml, tokenizer, posix, pcntl, zip, inotify
-                    tools: composer:v2
-                    coverage: pcov
-
-            # https://github.com/marketplace/actions/cache
-            -   name: Cache Composer dependencies
-                uses: actions/cache@v4
-                with:
-                    path: |
-                        ~/.composer/cache
-                        vendor/
-                    key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
-                    restore-keys: |
-                        ${{ runner.os }}-composer-${{ matrix.php-version }}-
-
-            -   name: Validate composer.json and composer.lock
-                run: composer validate
-
-            -   name: Install Composer dependencies
-                run: composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
-
-            -   name: Check for security advisories
-                run: |
-                    if composer audit --no-dev --locked; then
-                        echo "✅ No security vulnerabilities found in production dependencies"
-                    else
-                        echo "❌ Security vulnerabilities found!"
-                        exit 1
-                    fi
-
-            -   name: Run tests with PHPUnit
-                run: php -d xdebug.mode=coverage vendor/bin/phpunit
-
+            # https://github.com/marketplace/actions/codecov
             -   name: Upload coverage to Codecov
-                if: matrix.php-version == '8.5'
                 uses: codecov/codecov-action@v5
                 env:
                     CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -70,17 +27,7 @@ jobs:
                     verbose: true
 
             -   name: Upload test results to Codecov
-                if: matrix.php-version == '8.5' && !cancelled()
                 uses: codecov/test-results-action@v1
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}
                     files: .coverage/junit.xml
-
-            -   name: Upload coverage reports to GitHub
-                uses: actions/upload-artifact@v5
-                if: always()
-                with:
-                    name: coverage-report-php-${{ matrix.php-version }}
-                    path: |
-                        .coverage/clover.xml
-                    retention-days: 1
