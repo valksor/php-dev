@@ -17,16 +17,14 @@
     <testsuites>
         <testsuite name="Valksor Complete">
             <!-- Function library tests -->
-            <!-- Add more test directories as they are created:
             <directory>src/ValksorDev/Build/Tests</directory>
             <directory>src/ValksorDev/PhpCsFixerCustomFixers/Tests</directory>
-            -->
         </testsuite>
     </testsuites>
 
     <source>
         <include>
-            <directory>src/Valksor</directory>
+            <directory>src/ValksorDev</directory>
         </include>
         <exclude>
             <directory>.coverage</directory>
