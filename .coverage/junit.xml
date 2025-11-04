@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="150" assertions="226" errors="0" failures="0" skipped="1" time="0.000000">
+    <testsuite name="ValksorDev\Build\Tests\AbstractCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/AbstractCommandTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testWithEmptyParameterBag" class="ValksorDev\Build\Tests\AbstractCommandTest" classname="ValksorDev.Build.Tests.AbstractCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/AbstractCommandTest.php" line="71" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\BinaryAssetManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryAssetManagerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testGetLatestReleaseWithInvalidGithubResponse" class="ValksorDev\Build\Tests\BinaryAssetManagerTest" classname="ValksorDev.Build.Tests.BinaryAssetManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryAssetManagerTest.php" line="206" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\BinaryEnsureCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryEnsureCommandTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testCommandExecutionRequiresValidTool" class="ValksorDev\Build\Tests\BinaryEnsureCommandTest" classname="ValksorDev.Build.Tests.BinaryEnsureCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryEnsureCommandTest.php" line="46" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\BinaryRegistryTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryRegistryTest.php" tests="1" assertions="2" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testHasProvider" class="ValksorDev\Build\Tests\BinaryRegistryTest" classname="ValksorDev.Build.Tests.BinaryRegistryTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/BinaryRegistryTest.php" line="51" assertions="2" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\DevCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevCommandTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testCommandExecution" class="ValksorDev\Build\Tests\DevCommandTest" classname="ValksorDev.Build.Tests.DevCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevCommandTest.php" line="56" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\DevServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevServiceTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testStart" class="ValksorDev\Build\Tests\DevServiceTest" classname="ValksorDev.Build.Tests.DevServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevServiceTest.php" line="63" assertions="1" time="0.000000"/>
+      <testcase name="testGetServiceName" class="ValksorDev\Build\Tests\DevServiceTest" classname="ValksorDev.Build.Tests.DevServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevServiceTest.php" line="48" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\DevWatchCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchCommandTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testCommandName" class="ValksorDev\Build\Tests\DevWatchCommandTest" classname="ValksorDev.Build.Tests.DevWatchCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchCommandTest.php" line="80" assertions="1" time="0.000000"/>
+      <testcase name="testGetProviderRegistry" class="ValksorDev\Build\Tests\DevWatchCommandTest" classname="ValksorDev.Build.Tests.DevWatchCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchCommandTest.php" line="90" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\DevWatchServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchServiceTest.php" tests="2" assertions="2" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testWithDifferentEnvironment" class="ValksorDev\Build\Tests\DevWatchServiceTest" classname="ValksorDev.Build.Tests.DevWatchServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchServiceTest.php" line="96" assertions="1" time="0.000000"/>
+      <testcase name="testStartWithoutIo" class="ValksorDev\Build\Tests\DevWatchServiceTest" classname="ValksorDev.Build.Tests.DevWatchServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/DevWatchServiceTest.php" line="73" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\HotReloadCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadCommandTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testCommandInApplication" class="ValksorDev\Build\Tests\HotReloadCommandTest" classname="ValksorDev.Build.Tests.HotReloadCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadCommandTest.php" line="93" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\HotReloadServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadServiceTest.php" tests="1" assertions="0" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testWithProductionEnvironment" class="ValksorDev\Build\Tests\HotReloadServiceTest" classname="ValksorDev.Build.Tests.HotReloadServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadServiceTest.php" line="169" assertions="0" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\PathFilterTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" tests="1" assertions="13" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testPathFilteringRules" class="ValksorDev\Build\Tests\PathFilterTest" classname="ValksorDev.Build.Tests.PathFilterTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" line="30" assertions="13" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" tests="5" assertions="8" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testRemoveProcess" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="191" assertions="2" time="0.000000"/>
+      <testcase name="testShutdownStatus" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="203" assertions="1" time="0.000000"/>
+      <testcase name="testHasFailedProcesses" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="156" assertions="1" time="0.000000"/>
+      <testcase name="testDisplayStatusWithoutIo" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="73" assertions="1" time="0.000000"/>
+      <testcase name="testCount" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="56" assertions="3" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\ProviderRegistryTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProviderRegistryTest.php" tests="1" assertions="2" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testGetProvidersByFlagWithCustomProvider" class="ValksorDev\Build\Tests\ProviderRegistryTest" classname="ValksorDev.Build.Tests.ProviderRegistryTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProviderRegistryTest.php" line="94" assertions="2" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\RecursiveInotifyWatcherTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/RecursiveInotifyWatcherTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testAddRoot" class="ValksorDev\Build\Tests\RecursiveInotifyWatcherTest" classname="ValksorDev.Build.Tests.RecursiveInotifyWatcherTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/RecursiveInotifyWatcherTest.php" line="84" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\TailwindBuildCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/TailwindBuildCommandTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testWithDifferentProviderRegistry" class="ValksorDev\Build\Tests\TailwindBuildCommandTest" classname="ValksorDev.Build.Tests.TailwindBuildCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/TailwindBuildCommandTest.php" line="125" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\Build\Tests\TailwindServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/TailwindServiceTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testGetServiceName" class="ValksorDev\Build\Tests\TailwindServiceTest" classname="ValksorDev.Build.Tests.TailwindServiceTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/TailwindServiceTest.php" line="34" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\DeclareAfterOpeningTagFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/DeclareAfterOpeningTagFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testSkipsWhenDeclareAlreadyInline" class="ValksorDev\PhpCsFixerCustomFixers\Tests\DeclareAfterOpeningTagFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.DeclareAfterOpeningTagFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/DeclareAfterOpeningTagFixerTest.php" line="38" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\DoctrineMigrationsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/DoctrineMigrationsFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testRemovesAutoGeneratedComments" class="ValksorDev\PhpCsFixerCustomFixers\Tests\DoctrineMigrationsFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.DoctrineMigrationsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/DoctrineMigrationsFixerTest.php" line="26" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\FixersTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/FixersTest.php" tests="1" assertions="9" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testIteratorReturnsCustomFixerInstances" class="ValksorDev\PhpCsFixerCustomFixers\Tests\FixersTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.FixersTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/FixersTest.php" line="49" assertions="9" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\LineBreakBetweenMethodArgumentsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/LineBreakBetweenMethodArgumentsFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testMergesEmptyArgumentList" class="ValksorDev\PhpCsFixerCustomFixers\Tests\LineBreakBetweenMethodArgumentsFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.LineBreakBetweenMethodArgumentsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/LineBreakBetweenMethodArgumentsFixerTest.php" line="19" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\LineBreakBetweenStatementsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/LineBreakBetweenStatementsFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testAddsEmptyLineBetweenHandledStatements" class="ValksorDev\PhpCsFixerCustomFixers\Tests\LineBreakBetweenStatementsFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.LineBreakBetweenStatementsFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/LineBreakBetweenStatementsFixerTest.php" line="19" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\NoUselessDirnameCallFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/NoUselessDirnameCallFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testRewritesDirnameCalls" class="ValksorDev\PhpCsFixerCustomFixers\Tests\NoUselessDirnameCallFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.NoUselessDirnameCallFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/NoUselessDirnameCallFixerTest.php" line="19" assertions="1" time="0.000000"/>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\NoUselessStrlenFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/NoUselessStrlenFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\NoUselessStrlenFixerTest::testConvertsStrlenComparisons" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+        <testcase name="testConvertsStrlenComparisons with data set &quot;comparison on left&quot;" class="ValksorDev\PhpCsFixerCustomFixers\Tests\NoUselessStrlenFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.NoUselessStrlenFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/NoUselessStrlenFixerTest.php" line="21" assertions="1" time="0.000000"/>
+      </testsuite>
+    </testsuite>
+    <testsuite name="ValksorDev\PhpCsFixerCustomFixers\Tests\PromotedConstructorPropertyFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/PromotedConstructorPropertyFixerTest.php" tests="1" assertions="1" errors="0" failures="0" skipped="0" time="0.000000">
+      <testcase name="testPromotesConstructorProperty" class="ValksorDev\PhpCsFixerCustomFixers\Tests\PromotedConstructorPropertyFixerTest" classname="ValksorDev.PhpCsFixerCustomFixers.Tests.PromotedConstructorPropertyFixerTest" file="/var/www/html/valksor-dev/src/ValksorDev/PhpCsFixerCustomFixers/Tests/PromotedConstructorPropertyFixerTest.php" line="19" assertions="1" time="0.000000"/>
+    </testsuite>
+  </testsuite>
+</testsuites>
