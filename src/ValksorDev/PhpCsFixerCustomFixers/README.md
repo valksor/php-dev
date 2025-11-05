@@ -1,5 +1,8 @@
 # Valksor PHP-CS-Fixer Custom Fixers
 
+[![BSD-3-Clause](https://img.shields.io/badge/BSD--3--Clause-green?style=flat)](https://github.com/valksor/php-dev-cs-fixer-custom-fixers/blob/master/LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/valksor/php-dev-cs-fixer-custom-fixers/badge.svg?branch=master)](https://coveralls.io/github/valksor/php-dev-cs-fixer-custom-fixers?branch=master)
+
 A comprehensive PHP library providing custom fixers for PHP-CS-Fixer to enhance code quality, enforce modern coding standards, and improve development workflow efficiency.
 
 ## Use Cases
