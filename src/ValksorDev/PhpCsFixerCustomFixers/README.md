@@ -203,7 +203,7 @@ When adding a new custom fixer:
 
 ## Security
 
-If you discover any security-related issues, please email us at security@valksor.dev instead of using the issue tracker.
+If you discover any security-related issues, please email us at packages@valksor.com instead of using the issue tracker.
 
 ## Support
 

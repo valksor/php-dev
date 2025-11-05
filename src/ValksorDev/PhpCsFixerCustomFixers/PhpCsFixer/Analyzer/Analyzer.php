@@ -12,6 +12,7 @@
 
 namespace ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer;
 
+use Exception;
 use InvalidArgumentException;
 use PhpCsFixer\Tokenizer\Tokens;
 use PhpCsFixer\Tokenizer\TokensAnalyzer;
@@ -30,7 +31,6 @@ use function is_array;
 use function is_bool;
 use function is_int;
 use function mb_strlen;
-use function mb_strpos;
 use function sprintf;
 
 use const T_CASE;
@@ -92,7 +92,7 @@ final class Analyzer
         int $index,
     ): ?int {
         for ($i = $index; $i >= 0; $i--) {
-            if (false !== mb_strpos($this->tokens[$i]->getContent(), "\n")) {
+            if (str_contains($this->tokens[$i]->getContent(), "\n")) {
                 return $i;
             }
         }
@@ -131,7 +131,7 @@ final class Analyzer
         int $index,
     ): ?int {
         for ($i = $index; $i < $this->tokens->count(); $i++) {
-            if (false !== mb_strpos($this->tokens[$i]->getContent(), "\n")) {
+            if (str_contains($this->tokens[$i]->getContent(), "\n")) {
                 return $i;
             }
         }
