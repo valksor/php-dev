@@ -2085,7 +2085,7 @@
       </file>
       <file name="/var/www/html/valksor-dev/src/ValksorDev/Build/Service/ProcessManager.php">
         <class name="ValksorDev\Build\Service\ProcessManager" namespace="ValksorDev\Build\Service">
-          <metrics complexity="44" methods="14" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="48" elements="98" coveredelements="57"/>
+          <metrics complexity="44" methods="14" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="49" elements="98" coveredelements="58"/>
         </class>
         <line num="69" type="method" name="__construct" visibility="public" complexity="2" crap="2" count="22"/>
         <line num="73" type="stmt" count="22"/>
@@ -2170,22 +2170,22 @@
         <line num="299" type="stmt" count="0"/>
         <line num="300" type="stmt" count="0"/>
         <line num="304" type="stmt" count="1"/>
-        <line num="321" type="method" name="executeProcess" visibility="public" complexity="8" crap="19.94" count="1"/>
+        <line num="321" type="method" name="executeProcess" visibility="public" complexity="8" crap="16.00" count="1"/>
         <line num="326" type="stmt" count="1"/>
         <line num="328" type="stmt" count="1"/>
         <line num="332" type="stmt" count="1"/>
         <line num="335" type="stmt" count="1"/>
         <line num="337" type="stmt" count="1"/>
-        <line num="340" type="stmt" count="0"/>
-        <line num="342" type="stmt" count="0"/>
-        <line num="347" type="stmt" count="1"/>
+        <line num="340" type="stmt" count="1"/>
+        <line num="342" type="stmt" count="1"/>
+        <line num="347" type="stmt" count="0"/>
         <line num="348" type="stmt" count="0"/>
         <line num="351" type="stmt" count="0"/>
         <line num="353" type="stmt" count="0"/>
         <line num="358" type="stmt" count="0"/>
         <line num="363" type="stmt" count="0"/>
         <line num="365" type="stmt" count="0"/>
-        <metrics loc="369" ncloc="233" classes="1" methods="14" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="48" elements="98" coveredelements="57"/>
+        <metrics loc="369" ncloc="233" classes="1" methods="14" coveredmethods="9" conditionals="0" coveredconditionals="0" statements="84" coveredstatements="49" elements="98" coveredelements="58"/>
       </file>
       <file name="/var/www/html/valksor-dev/src/ValksorDev/Build/Service/RecursiveInotifyWatcher.php">
         <class name="ValksorDev\Build\Service\RecursiveInotifyWatcher" namespace="ValksorDev\Build\Service">
@@ -3575,6 +3575,6 @@
         <metrics loc="18" ncloc="9" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
       </file>
     </package>
-    <metrics files="52" loc="9856" ncloc="7752" classes="46" methods="337" coveredmethods="103" conditionals="0" coveredconditionals="0" statements="2915" coveredstatements="994" elements="3252" coveredelements="1097"/>
+    <metrics files="52" loc="9856" ncloc="7752" classes="46" methods="337" coveredmethods="103" conditionals="0" coveredconditionals="0" statements="2915" coveredstatements="995" elements="3252" coveredelements="1098"/>
   </project>
 </coverage>
