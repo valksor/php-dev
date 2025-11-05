@@ -3,6 +3,23 @@
 [![BSD-3-Clause](https://img.shields.io/badge/BSD--3--Clause-green?style=flat)](https://github.com/valksor/php-dev/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/valksor/php-dev/badge.svg?branch=master)](https://coveralls.io/github/valksor/php-dev?branch=master)
 
+## This repository contains these:
+
+<table>
+<tr>
+<th>Repository</th>
+<th>Coverage</th>
+<th>Repository</th>
+<th>Coverage</th>
+</tr>
+<tr>
+<td><a href="https://github.com/valksor/php-dev-build">php-dev-build</a></td>
+<td><a href="https://coveralls.io/github/valksor/php-dev-build?branch=master"><img src="https://coveralls.io/repos/github/valksor/php-dev-build/badge.svg?branch=master" alt="Coverage"></a></td>
+<td><a href="https://github.com/valksor/php-dev-cs-fixer-custom-fixers">php-dev-cs-fixer-custom-fixers</a></td>
+<td><a href="https://coveralls.io/github/valksor/php-dev-cs-fixer-custom-fixers?branch=master"><img src="https://coveralls.io/repos/github/valksor/php-dev-cs-fixer-custom-fixers/badge.svg?branch=master" alt="Coverage"></a></td>
+</tr>
+</table>
+
 A comprehensive PHP development toolkit that provides modern development tools, custom PHP-CS-Fixer fixers, build automation, and hot reloading capabilities for Symfony applications. This library enhances development workflow efficiency with integrated tooling for frontend builds, code quality, and real-time development features.
 
 ## Features
