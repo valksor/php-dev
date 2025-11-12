@@ -34,14 +34,10 @@ return new Config()
     ->registerCustomFixers($fixers)
     ->setRules([
         ...$fixers::getFixers(),
-        '@PER-CS3x0' => true,
-        '@PER-CS3x0:risky' => true,
-        '@PHP8x0Migration:risky' => true,
-        '@PHP8x1Migration' => true,
-        '@PHP8x2Migration' => true,
-        '@PHP8x3Migration' => true,
-        '@PHP8x4Migration' => true,
-        '@PHP8x5Migration' => true,
+        '@auto' => true,
+        '@auto:risky' => true,
+        '@autoPHPMigration' => true,
+        '@autoPHPMigration:risky' => true,
         '@Symfony' => true,
         '@Symfony:risky' => true,
         'binary_operator_spaces' => true,
