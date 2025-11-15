@@ -8,18 +8,21 @@ A comprehensive PHP library providing custom fixers for PHP-CS-Fixer to enhance 
 ## Use Cases
 
 ### Code Quality Enhancement
+
 - **Modern PHP Standards**: Enforce PHP 8.4+ best practices including promoted constructor properties
 - **Readability Improvements**: Automatic formatting for better code readability and maintainability
 - **Team Consistency**: Ensure consistent coding style across development teams
 - **Migration Cleanup**: Automatically clean up auto-generated comments in Doctrine migration files
 
 ### Development Workflow Automation
+
 - **Automated Refactoring**: Convert traditional constructor patterns to modern promoted properties
 - **Code Cleanup**: Remove unnecessary function calls and redundant code patterns
 - **Standards Enforcement**: Go beyond PSR-12 with project-specific coding standards
 - **CI/CD Integration**: Seamless integration with continuous integration pipelines
 
 ### Performance Optimization
+
 - **Code Optimization**: Remove inefficient patterns like unnecessary `strlen()` calls in comparisons
 - **Clean Code**: Eliminate redundant `dirname()` calls and other unnecessary constructs
 - **Modern Patterns**: Promote use of modern PHP features for better performance
@@ -164,7 +167,6 @@ Removes unnecessary `strlen()` calls when used in comparisons.
 
 Converts traditional constructor property assignments to promoted properties (PHP 8.0+).
 
-
 ## Contributing
 
 - Code style requirements (PSR-12)
@@ -186,14 +188,15 @@ To contribute to the custom fixers:
 When adding a new custom fixer:
 
 1. Extend the appropriate base class:
-   ```php
-   use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\AbstractFixer;
 
-   class YourCustomFixer extends AbstractFixer
-   {
-       // Implement required methods
-   }
-   ```
+    ```php
+    use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\AbstractFixer;
+
+    class YourCustomFixer extends AbstractFixer
+    {
+        // Implement required methods
+    }
+    ```
 
 2. Add comprehensive test coverage in `tests/Fixer/YourCustomFixerTest.php`
 
@@ -229,6 +232,7 @@ This package is licensed under the [BSD-3-Clause License](LICENSE).
 This package is part of the [valksor/php-dev](https://github.com/valksor/valksor-dev) project - a comprehensive PHP library and Symfony bundle that provides a collection of utilities, components, and integrations for Symfony applications.
 
 The main project includes:
+
 - Various utility functions and components
 - Doctrine ORM tools and extensions
 - Symfony bundle for easy configuration

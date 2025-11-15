@@ -80,6 +80,7 @@ valksor:
 ### When to Use Simple Configuration
 
 Use the basic setup above when:
+
 - **Standard Symfony project** with single app structure
 - **Default locations** for assets (`assets/`, `templates/`, `src/`)
 - **Beginning development** and want to get started quickly
@@ -96,23 +97,24 @@ valksor:
         services:
             binaries:
                 enabled: true
-                flags: ['init', 'dev', 'prod']
+                flags: ["init", "dev", "prod"]
                 options:
-                    required: ['tailwindcss', 'esbuild', 'daisyui']
+                    required: ["tailwindcss", "esbuild", "daisyui"]
             hot_reload:
                 enabled: true
-                flags: ['dev']
+                flags: ["dev"]
                 options:
                     debounce_delay: 0.3
-                    watch_dirs: ['/src', '/templates']
+                    watch_dirs: ["/src", "/templates"]
             tailwind:
                 enabled: true
-                flags: ['dev', 'prod']
+                flags: ["dev", "prod"]
                 options:
-                    minify: false  # Auto-sets to true in prod
+                    minify: false # Auto-sets to true in prod
 ```
 
 **Use advanced configuration when:**
+
 - **Multi-app projects** with separate `apps/` directory
 - **Custom file locations** for assets or templates
 - **Specific performance tuning** (debounce delays, watch directories)
@@ -120,6 +122,7 @@ valksor:
 - **Production optimization** (different settings per environment)
 
 That's it! Valksor Dev will automatically:
+
 - Watch your PHP, Twig, CSS, and JavaScript files
 - Reload your browser when files change
 - Compile Tailwind CSS automatically
@@ -153,6 +156,7 @@ To enable automatic browser reloading, add this to your base HTML template:
 ```
 
 **What each part does:**
+
 - `valksor_sse_importmap_definition()`: Sets up the import map and SSE connection
 - `valksor_sse_importmap_scripts()`: Loads JavaScript modules for specific app sections
 - `@ValksorSse/sse.html.twig`: Includes the SSE client that handles browser reloads
@@ -212,17 +216,17 @@ import { stimulus } from '@hotwired/stimulus';
 
 ## Commands
 
-| Command | What It Does | When to Use |
-|---------|--------------|-------------|
-| `valksor:dev` | Lightweight dev mode (hot reload + SSE) | Quick frontend development |
-| `valksor:watch` | Full dev environment (all services) | Complete development workflow |
-| `valksor-prod:build` | Build production assets | Before deployment |
-| `valksor:tailwind` | Build Tailwind CSS only | Manual CSS compilation |
-| `valksor:importmap` | Update import maps only | Manual JavaScript updates |
-| `valksor:binary` | Download build tools | Setup or update tools |
-| `valksor:icons` | Generate SVG icons | When using icon system |
-| `valksor:hot-reload` | Hot reload service only | Custom reload setups |
-| `valksor:binaries:install` | Install all binaries | Fresh environment setup |
+| Command                    | What It Does                            | When to Use                   |
+| -------------------------- | --------------------------------------- | ----------------------------- |
+| `valksor:dev`              | Lightweight dev mode (hot reload + SSE) | Quick frontend development    |
+| `valksor:watch`            | Full dev environment (all services)     | Complete development workflow |
+| `valksor-prod:build`       | Build production assets                 | Before deployment             |
+| `valksor:tailwind`         | Build Tailwind CSS only                 | Manual CSS compilation        |
+| `valksor:importmap`        | Update import maps only                 | Manual JavaScript updates     |
+| `valksor:binary`           | Download build tools                    | Setup or update tools         |
+| `valksor:icons`            | Generate SVG icons                      | When using icon system        |
+| `valksor:hot-reload`       | Hot reload service only                 | Custom reload setups          |
+| `valksor:binaries:install` | Install all binaries                    | Fresh environment setup       |
 
 ### Command Options
 
@@ -242,10 +246,12 @@ php bin/console valksor:dev --env=prod
 ## What's Included?
 
 This meta-package automatically includes:
+
 - **valksor/php-dev-build** - Build tools, hot reloading, and asset management
 - **valksor/php-dev-cs-fixer-custom-fixers** - Enhanced code quality fixers
 
 ### Build Tools Features
+
 - **Hot Reloading**: Automatic browser refresh on file changes
 - **Tailwind CSS**: Integrated compilation with DaisyUI support
 - **Import Maps**: Modern JavaScript dependency management
@@ -253,6 +259,7 @@ This meta-package automatically includes:
 - **Icon Generation**: SVG icon processing with Lucide integration
 
 ### Code Quality Features
+
 - **PHP 8.4+ Best Practices**: Modern coding standards
 - **Promoted Constructor Properties**: Automatic refactoring
 - **Doctrine Migration Cleanup**: Remove auto-generated comments
@@ -261,6 +268,7 @@ This meta-package automatically includes:
 ## Development Workflow
 
 ### Daily Development
+
 ```bash
 # Start your day
 php bin/console valksor:watch
@@ -272,6 +280,7 @@ php bin/console valksor:watch
 ```
 
 ### Before Deployment
+
 ```bash
 # Build optimized assets
 php bin/console valksor-prod:build
@@ -314,8 +323,8 @@ valksor:
     build:
         enabled: true
         project:
-            apps_dir: 'apps'                    # Directory containing apps
-            infrastructure_dir: 'infrastructure' # Shared code
+            apps_dir: "apps" # Directory containing apps
+            infrastructure_dir: "infrastructure" # Shared code
         hot_reload:
             enabled: true
         tailwind:
@@ -369,6 +378,7 @@ For multi-app projects, include the app ID in your templates:
 ```
 
 **Key points:**
+
 - Use `{{ asset(app_id ~ '/styles/app.css') }}` for app-specific CSS
 - Include app ID in import map arrays: `['infrastructure/head', 'www/head']`
 - Each app gets its own hot reload and asset compilation
@@ -463,6 +473,7 @@ When you first run `valksor:watch`:
 4. **Server Start**: Hot reload server starts on port 8080
 
 You should see output like:
+
 ```
 [Valksor] Downloading build tools...
 [Valksor] Scanning for assets...
@@ -473,12 +484,14 @@ You should see output like:
 ### Common Setup Issues
 
 **Permission errors on binary downloads:**
+
 ```bash
 # Fix binary directory permissions
 chmod +x bin/build-tools/*
 ```
 
 **Inotify limits (Linux):**
+
 ```bash
 # Check current limit
 cat /proc/sys/fs/inotify/max_user_watches
@@ -489,6 +502,7 @@ sudo sysctl -p
 ```
 
 **Port 8080 already in use:**
+
 ```bash
 # Check what's using the port
 lsof -i :8080
