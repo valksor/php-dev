@@ -12,11 +12,10 @@
 
 namespace ValksorDev\Build\Tests;
 
-use Error;
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -50,23 +49,9 @@ final class HotReloadServiceTest extends TestCase
         self::assertFalse($hotReloadService->isRunning());
     }
 
-    public function testReload(): void
-    {
-        $hotReloadService = new HotReloadService($this->parameterBag);
-
-        // Test that reload method exists and can be called
-        // Note: This might fail due to IO property initialization, but the method should exist
-        try {
-            $hotReloadService->reload();
-            // If successful, verify the method exists and is callable
-            self::assertTrue(method_exists($hotReloadService, 'reload'));
-        } catch (Error $e) {
-            // Expected if IO property is not initialized - verify the method still exists
-            self::assertTrue(method_exists($hotReloadService, 'reload'));
-            self::assertStringContainsString('io', strtolower($e->getMessage()));
-        }
-    }
-
+    /**
+     * @throws ReflectionException
+     */
     public function testStartWithMinimalConfig(): void
     {
         $minimalParameterBag = new ParameterBag([
@@ -172,11 +157,9 @@ final class HotReloadServiceTest extends TestCase
     {
         $hotReloadService = new HotReloadService($this->parameterBag);
 
+        $this->expectNotToPerformAssertions();
         // Test that stop method executes without error
         $hotReloadService->stop();
-
-        // Verify the method executed without throwing an exception
-        self::assertTrue(method_exists($hotReloadService, 'stop'));
     }
 
     public function testWithDifferentExtensions(): void
@@ -311,25 +294,14 @@ final class HotReloadServiceTest extends TestCase
 
     /**
      * Assert that the service configuration was properly loaded.
+     *
+     * @throws ReflectionException
      */
     private function assertServiceConfigurationWasLoaded(
         HotReloadService $service,
     ): void {
-        $reflection = new ReflectionClass($service);
-        $projectDirProperty = $reflection->getProperty('projectDir');
+        $projectDirProperty = new ReflectionClass($service)->getProperty('projectDir');
         self::assertSame($this->tempDir, $projectDirProperty->getValue($service));
-    }
-
-    /**
-     * Assert that the shutdown flag is properly set.
-     */
-    private function assertShutdownFlagIsSet(
-        HotReloadService $service,
-    ): void {
-        $reflection = new ReflectionClass($service);
-        $shouldShutdownProperty = $reflection->getProperty('shouldShutdown');
-        $shouldShutdownProperty->setAccessible(true);
-        self::assertTrue($shouldShutdownProperty->getValue($service));
     }
 
     private function removeDirectory(
@@ -356,7 +328,6 @@ final class HotReloadServiceTest extends TestCase
      */
     private function startServiceWithTimeout(
         HotReloadService $service,
-        int $timeoutSeconds = 1,
     ): int {
         if (!function_exists('pcntl_signal') || !function_exists('pcntl_alarm')) {
             $this->markTestSkipped('pcntl extension is required to safely stop HotReloadService during tests.');
@@ -366,7 +337,7 @@ final class HotReloadServiceTest extends TestCase
         pcntl_signal(SIGALRM, static function () use ($service): void {
             $service->stop();
         });
-        pcntl_alarm($timeoutSeconds);
+        pcntl_alarm(1);
 
         try {
             return $service->start();

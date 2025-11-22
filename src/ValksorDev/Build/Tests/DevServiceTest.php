@@ -12,9 +12,9 @@
 
 namespace ValksorDev\Build\Tests;
 
-use Exception;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -52,6 +52,9 @@ final class DevServiceTest extends TestCase
         self::assertSame('dev', DevService::getServiceName());
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testSetIo(): void
     {
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
@@ -60,8 +63,7 @@ final class DevServiceTest extends TestCase
         $devService->setIo($this->io);
 
         // Verify IO was actually set using reflection
-        $reflection = new ReflectionClass($devService);
-        $ioProperty = $reflection->getProperty('io');
+        $ioProperty = new ReflectionClass($devService)->getProperty('io');
         self::assertSame($this->io, $ioProperty->getValue($devService));
     }
 
@@ -76,10 +78,12 @@ final class DevServiceTest extends TestCase
         self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
 
         // Verify service state without making assumptions about running behavior
-        self::assertTrue(method_exists($devService, 'isRunning'));
         self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testStartWithoutIo(): void
     {
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
@@ -91,8 +95,7 @@ final class DevServiceTest extends TestCase
         self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
 
         // IO should not be set - verify it's null
-        $reflection = new ReflectionClass($devService);
-        $ioProperty = $reflection->getProperty('io');
+        $ioProperty = new ReflectionClass($devService)->getProperty('io');
         self::assertNull($ioProperty->getValue($devService));
     }
 
@@ -108,9 +111,6 @@ final class DevServiceTest extends TestCase
 
         // Service should still not be running after stop
         self::assertFalse($devService->isRunning());
-
-        // Verify the method executed without throwing an exception
-        self::assertTrue(method_exists($devService, 'stop'));
     }
 
     public function testWithDifferentEnvironment(): void
@@ -182,21 +182,8 @@ final class DevServiceTest extends TestCase
         DevService $service,
     ): void {
         // Verify service was constructed with empty configuration
-        $parameterBag = $service->getParameterBag();
-        $services = $parameterBag->get('valksor.build.services');
+        $services = $service->getParameterBag()->get('valksor.build.services');
         self::assertEmpty($services);
         self::assertIsArray($services);
-    }
-
-    /**
-     * Assert that the shutdown flag is properly set.
-     */
-    private function assertShutdownFlagIsSet(
-        DevService $service,
-    ): void {
-        $reflection = new ReflectionClass($service);
-        $shouldShutdownProperty = $reflection->getProperty('shouldShutdown');
-        $shouldShutdownProperty->setAccessible(true);
-        self::assertTrue($shouldShutdownProperty->getValue($service));
     }
 }

@@ -14,6 +14,7 @@ namespace ValksorDev\Build\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -32,6 +33,66 @@ final class TailwindServiceTest extends TestCase
 {
     private ParameterBagInterface $parameterBag;
     private string $tempDir;
+
+    public function testBuildFailure(): void
+    {
+        // Create required directory structure
+        mkdir($this->tempDir . '/var/tailwindcss', 0o755, true);
+        mkdir($this->tempDir . '/apps/test-app/assets/styles', 0o755, true);
+
+        // Create a failing tailwindcss binary
+        $tailwindBinary = $this->tempDir . '/var/tailwindcss/tailwindcss';
+        file_put_contents($tailwindBinary, '#!/bin/bash' . PHP_EOL . 'exit 1');
+        chmod($tailwindBinary, 0o755);
+
+        // Create a test tailwind source file
+        $sourceFile = $this->tempDir . '/apps/test-app/assets/styles/app.tailwind.css';
+        file_put_contents($sourceFile, '@tailwind base;');
+
+        $tailwindService = new TailwindService($this->parameterBag);
+        $tailwindService->setActiveAppId('test-app');
+        $tailwindService->setIo(new SymfonyStyle(new ArrayInput([]), new BufferedOutput()));
+
+        // Test start method with failing binary
+        $result = $tailwindService->start(['watch' => false, 'minify' => false]);
+
+        self::assertSame(Command::FAILURE, $result);
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function testDiscoverSources(): void
+    {
+        // Create a complex directory structure
+        mkdir($this->tempDir . '/apps/app1/assets', 0o755, true);
+        mkdir($this->tempDir . '/apps/app2/assets', 0o755, true);
+        mkdir($this->tempDir . '/apps/app3/ignored', 0o755, true);
+
+        // Create tailwind files
+        file_put_contents($this->tempDir . '/apps/app1/assets/style.tailwind.css', '');
+        file_put_contents($this->tempDir . '/apps/app2/assets/style.tailwind.css', '');
+        file_put_contents($this->tempDir . '/apps/app3/ignored/style.tailwind.css', '');
+
+        // Create a non-tailwind file
+        file_put_contents($this->tempDir . '/apps/app1/assets/other.css', '');
+
+        $tailwindService = new TailwindService($this->parameterBag);
+
+        // Use reflection to access private collectTailwindSources method
+        $method = new ReflectionClass($tailwindService)->getMethod('collectTailwindSources');
+
+        // Test discovery
+        $sources = $method->invoke($tailwindService, true);
+
+        $foundPaths = array_map(static fn ($s) => $s['input'], $sources);
+
+        self::assertCount(3, $sources);
+        self::assertContains($this->tempDir . '/apps/app1/assets/style.tailwind.css', $foundPaths);
+        self::assertContains($this->tempDir . '/apps/app2/assets/style.tailwind.css', $foundPaths);
+        self::assertContains($this->tempDir . '/apps/app3/ignored/style.tailwind.css', $foundPaths);
+        self::assertNotContains($this->tempDir . '/apps/app1/assets/other.css', $foundPaths);
+    }
 
     public function testGetServiceName(): void
     {
@@ -75,9 +136,9 @@ final class TailwindServiceTest extends TestCase
             // Should return a valid command exit code
             self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
 
-            // If successful, service should be running
+            // If successful, service should NOT be running (as it's not watch mode)
             if (Command::SUCCESS === $result) {
-                self::assertTrue($tailwindService->isRunning());
+                self::assertFalse($tailwindService->isRunning());
             }
         } catch (RuntimeException $e) {
             // Expected when binary setup is incomplete in test environment
@@ -155,7 +216,9 @@ final class TailwindServiceTest extends TestCase
 
         // Test start method with watch mode
         try {
-            $result = $tailwindService->start(['minify' => false]);
+            // We cannot test actual watch mode as it blocks, so we test build mode here
+            // or we would need to refactor the service to allow mocking the watcher loop
+            $result = $tailwindService->start(['watch' => false, 'minify' => false]);
 
             // Should return a valid command exit code
             self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
@@ -168,6 +231,9 @@ final class TailwindServiceTest extends TestCase
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function testStop(): void
     {
         $tailwindService = new TailwindService($this->parameterBag);
@@ -217,7 +283,7 @@ final class TailwindServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->tempDir = sys_get_temp_dir() . '/tailwind_service_test_' . uniqid('', true);
+        $this->tempDir = getcwd() . '/var/test_tmp_' . uniqid('', true);
 
         if (!mkdir($this->tempDir, 0o755, true)) {
             throw new RuntimeException('Failed to create temp directory');
@@ -251,7 +317,6 @@ final class TailwindServiceTest extends TestCase
 
         if ($reflection->hasProperty('activeAppId')) {
             $activeAppIdProperty = $reflection->getProperty('activeAppId');
-            $activeAppIdProperty->setAccessible(true);
             self::assertSame($expected, $activeAppIdProperty->getValue($service));
         }
     }
@@ -275,13 +340,13 @@ final class TailwindServiceTest extends TestCase
 
     /**
      * Assert that the shutdown flag is properly set.
+     *
+     * @throws ReflectionException
      */
     private function assertShutdownFlagIsSet(
         TailwindService $service,
     ): void {
-        $reflection = new ReflectionClass($service);
-        $shouldShutdownProperty = $reflection->getProperty('shouldShutdown');
-        $shouldShutdownProperty->setAccessible(true);
+        $shouldShutdownProperty = new ReflectionClass($service)->getProperty('shouldShutdown');
         self::assertTrue($shouldShutdownProperty->getValue($service));
     }
 

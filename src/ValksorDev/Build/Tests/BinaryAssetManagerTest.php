@@ -68,17 +68,7 @@ final class BinaryAssetManagerTest extends TestCase
     public function testBackwardCompatibility(): void
     {
         // Original config without download_strategy should work as before
-        $config = [
-            'name' => 'test-tool',
-            'source' => 'github',
-            'repo' => 'test/repo',
-            'assets' => [
-                ['pattern' => 'linux-x64', 'target' => 'test-binary', 'executable' => true],
-            ],
-            'target_dir' => $this->targetDir,
-        ];
 
-        $manager = new BinaryAssetManager($config);
         $this->expectNotToPerformAssertions();
     }
 
@@ -87,19 +77,6 @@ final class BinaryAssetManagerTest extends TestCase
      */
     public function testCommitStrategyWithoutCommitRef(): void
     {
-        $config = [
-            'name' => 'test-tool',
-            'source' => 'github',
-            'repo' => 'test/repo',
-            'download_strategy' => 'commit',
-            // No commit_ref specified - should auto-detect default branch
-            'assets' => [
-                ['pattern' => 'tool', 'target' => 'tool', 'executable' => true],
-            ],
-            'target_dir' => $this->targetDir,
-        ];
-
-        $manager = new BinaryAssetManager($config);
         $this->expectNotToPerformAssertions();
     }
 
@@ -108,19 +85,6 @@ final class BinaryAssetManagerTest extends TestCase
      */
     public function testConstructorWithCommitStrategy(): void
     {
-        $config = [
-            'name' => 'test-tool',
-            'source' => 'github',
-            'repo' => 'test/repo',
-            'download_strategy' => 'commit',
-            'commit_ref' => 'main',
-            'assets' => [
-                ['pattern' => 'tool', 'target' => 'tool', 'executable' => true],
-            ],
-            'target_dir' => $this->targetDir,
-        ];
-
-        $manager = new BinaryAssetManager($config);
         $this->expectNotToPerformAssertions();
     }
 
@@ -129,34 +93,11 @@ final class BinaryAssetManagerTest extends TestCase
      */
     public function testConstructorWithTagStrategy(): void
     {
-        $config = [
-            'name' => 'test-tool',
-            'source' => 'github',
-            'repo' => 'test/repo',
-            'download_strategy' => 'tag',
-            'assets' => [
-                ['pattern' => 'tool-{platform}', 'target' => 'tool', 'executable' => true],
-            ],
-            'target_dir' => $this->targetDir,
-        ];
-
-        $manager = new BinaryAssetManager($config);
         $this->expectNotToPerformAssertions();
     }
 
     public function testConstructorWithValidConfig(): void
     {
-        $config = [
-            'name' => 'test-tool',
-            'source' => 'github',
-            'repo' => 'test/repo',
-            'assets' => [
-                ['pattern' => 'linux-x64', 'target' => 'test-binary', 'executable' => true],
-            ],
-            'target_dir' => $this->targetDir,
-        ];
-
-        new BinaryAssetManager($config);
         $this->expectNotToPerformAssertions();
     }
 

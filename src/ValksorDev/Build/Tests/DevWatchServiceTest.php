@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use ValksorDev\Build\Provider\ProviderInterface;
 use ValksorDev\Build\Provider\ProviderRegistry;
 use ValksorDev\Build\Service\DevWatchService;
 
@@ -68,6 +69,178 @@ final class DevWatchServiceTest extends TestCase
             // Expected in test environment due to missing dependencies
             self::assertTrue(true);
         }
+    }
+
+    public function testStartWithInitServicesOnly(): void
+    {
+        $parameterBag = new ParameterBag([
+            'kernel.project_dir' => '/test/project',
+            'kernel.environment' => 'dev',
+            'valksor.build.services' => [
+                'init_service' => [
+                    'enabled' => true,
+                    'provider' => 'init_provider',
+                    'flags' => ['init' => true],
+                ],
+                // Add a dev service so start() doesn't return early
+                'dev_service' => [
+                    'enabled' => true,
+                    'provider' => 'dev_provider',
+                    'flags' => ['dev' => true],
+                ],
+            ],
+        ]);
+
+        // Create a mock provider for init
+        $initProvider = new class implements ProviderInterface {
+            public bool $initialized = false;
+
+            public function getName(): string
+            {
+                return 'init_provider';
+            }
+
+            public function getServiceOrder(): int
+            {
+                return 1;
+            }
+
+            public function getDependencies(): array
+            {
+                return [];
+            }
+
+            public function init(
+                array $options,
+            ): void {
+                $this->initialized = true;
+            }
+
+            public function build(
+                array $options,
+            ): int {
+                return 0;
+            }
+
+            public function watch(
+                array $options,
+            ): int {
+                return 0;
+            }
+        };
+
+        // Create a mock provider for dev
+        $devProvider = new class implements ProviderInterface {
+            public function getName(): string
+            {
+                return 'dev_provider';
+            }
+
+            public function getServiceOrder(): int
+            {
+                return 2;
+            }
+
+            public function getDependencies(): array
+            {
+                return [];
+            }
+
+            public function init(
+                array $options,
+            ): void {
+            }
+
+            public function build(
+                array $options,
+            ): int {
+                return 0;
+            }
+
+            public function watch(
+                array $options,
+            ): int {
+                return 0;
+            }
+        };
+
+        // Use real ProviderRegistry
+        $providerRegistry = new ProviderRegistry([$initProvider, $devProvider]);
+
+        $devWatchService = new DevWatchService($parameterBag, $providerRegistry);
+        $devWatchService->setIo($this->io);
+
+        // This will fail because dev_service command fails to start (process exits or invalid command)
+        // But init should have run
+        $result = $devWatchService->start();
+
+        self::assertSame(1, $result); // Command::FAILURE
+        self::assertTrue($initProvider->initialized);
+    }
+
+    public function testStartWithMissingProviders(): void
+    {
+        $parameterBag = new ParameterBag([
+            'kernel.project_dir' => '/test/project',
+            'kernel.environment' => 'dev',
+            'valksor.build.services' => [
+                'valid_service' => [
+                    'enabled' => true,
+                    'provider' => 'valid',
+                    'flags' => ['dev' => true],
+                ],
+                'missing_service' => [
+                    'enabled' => true,
+                    'provider' => 'missing',
+                    'flags' => ['dev' => true],
+                ],
+            ],
+        ]);
+
+        // Create valid provider
+        $validProvider = new class implements ProviderInterface {
+            public function getName(): string
+            {
+                return 'valid';
+            }
+
+            public function getServiceOrder(): int
+            {
+                return 1;
+            }
+
+            public function getDependencies(): array
+            {
+                return [];
+            }
+
+            public function init(
+                array $options,
+            ): void {
+            }
+
+            public function build(
+                array $options,
+            ): int {
+                return 0;
+            }
+
+            public function watch(
+                array $options,
+            ): int {
+                return 0;
+            }
+        };
+
+        // Registry with only valid provider
+        $providerRegistry = new ProviderRegistry([$validProvider]);
+
+        $devWatchService = new DevWatchService($parameterBag, $providerRegistry);
+        $devWatchService->setIo($this->io);
+
+        $result = $devWatchService->start();
+
+        self::assertSame(1, $result); // Command::FAILURE
     }
 
     public function testStartWithoutIo(): void
