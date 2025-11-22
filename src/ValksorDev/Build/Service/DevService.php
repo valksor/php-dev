@@ -106,6 +106,11 @@ final class DevService
         return $this->providerRegistry;
     }
 
+    public function isRunning(): bool
+    {
+        return $this->running;
+    }
+
     public function setInteractive(
         bool $isInteractive,
     ): void {

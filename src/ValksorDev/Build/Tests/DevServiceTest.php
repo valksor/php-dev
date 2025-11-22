@@ -14,6 +14,8 @@ namespace ValksorDev\Build\Tests;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -54,10 +56,13 @@ final class DevServiceTest extends TestCase
     {
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
 
-        // Test that setIo method executes without error
+        // Test that setIo method properly sets the IO property
         $devService->setIo($this->io);
 
-        self::assertTrue(true); // If we get here without exception, the method works
+        // Verify IO was actually set using reflection
+        $reflection = new ReflectionClass($devService);
+        $ioProperty = $reflection->getProperty('io');
+        self::assertSame($this->io, $ioProperty->getValue($devService));
     }
 
     public function testStart(): void
@@ -65,38 +70,47 @@ final class DevServiceTest extends TestCase
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
         $devService->setIo($this->io);
 
-        // Test that start method executes without errors
-        // In a real scenario, this would start processes
-        try {
-            $result = $devService->start();
-            self::assertContains($result, [0, 1]); // Command::SUCCESS or Command::FAILURE
-        } catch (Exception) {
-            // Expected in test environment due to missing dependencies
-            self::assertTrue(true);
-        }
+        $result = $devService->start();
+
+        // Should return a valid command exit code
+        self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
+
+        // Verify service state without making assumptions about running behavior
+        self::assertTrue(method_exists($devService, 'isRunning'));
+        self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
     }
 
     public function testStartWithoutIo(): void
     {
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
 
-        // Test start without setting IO
-        try {
-            $result = $devService->start();
-            self::assertContains($result, [0, 1]);
-        } catch (Exception) {
-            self::assertTrue(true);
-        }
+        // Should still be able to start without IO, but may fail gracefully
+        $result = $devService->start();
+
+        // Should return a valid command exit code
+        self::assertContains($result, [Command::SUCCESS, Command::FAILURE]);
+
+        // IO should not be set - verify it's null
+        $reflection = new ReflectionClass($devService);
+        $ioProperty = $reflection->getProperty('io');
+        self::assertNull($ioProperty->getValue($devService));
     }
 
     public function testStop(): void
     {
         $devService = new DevService($this->parameterBag, $this->providerRegistry);
 
+        // Initially service should not be running
+        self::assertFalse($devService->isRunning());
+
         // Test that stop method executes without error
         $devService->stop();
 
-        self::assertTrue(true); // If we get here, stop worked
+        // Service should still not be running after stop
+        self::assertFalse($devService->isRunning());
+
+        // Verify the method executed without throwing an exception
+        self::assertTrue(method_exists($devService, 'stop'));
     }
 
     public function testWithDifferentEnvironment(): void
@@ -128,12 +142,13 @@ final class DevServiceTest extends TestCase
         $devService = new DevService($emptyParameterBag, $this->providerRegistry);
         $devService->setIo($this->io);
 
-        try {
-            $result = $devService->start();
-            self::assertContains($result, [0, 1]);
-        } catch (Exception) {
-            self::assertTrue(true);
-        }
+        $result = $devService->start();
+
+        // Should return SUCCESS when no services to manage
+        self::assertSame(Command::SUCCESS, $result);
+
+        // Service should handle empty configuration gracefully
+        $this->assertEmptyConfigurationHandled($devService);
     }
 
     protected function setUp(): void
@@ -158,5 +173,30 @@ final class DevServiceTest extends TestCase
         ]);
         $this->providerRegistry = new ProviderRegistry([]);
         $this->io = $this->createStub(SymfonyStyle::class);
+    }
+
+    /**
+     * Assert that empty configuration was handled properly.
+     */
+    private function assertEmptyConfigurationHandled(
+        DevService $service,
+    ): void {
+        // Verify service was constructed with empty configuration
+        $parameterBag = $service->getParameterBag();
+        $services = $parameterBag->get('valksor.build.services');
+        self::assertEmpty($services);
+        self::assertIsArray($services);
+    }
+
+    /**
+     * Assert that the shutdown flag is properly set.
+     */
+    private function assertShutdownFlagIsSet(
+        DevService $service,
+    ): void {
+        $reflection = new ReflectionClass($service);
+        $shouldShutdownProperty = $reflection->getProperty('shouldShutdown');
+        $shouldShutdownProperty->setAccessible(true);
+        self::assertTrue($shouldShutdownProperty->getValue($service));
     }
 }
