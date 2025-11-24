@@ -120,13 +120,13 @@ php bin/console valksor:snapshot --max_file_size=2048
 
 ### Command Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--path` | Directory(s) to scan (can be used multiple times) | Project root |
-| `--output_file` | Output file path | `snapshot_YYYY_MM_DD_HHMMSS.mcp` |
-| `--max_files` | Maximum files to process | 500 |
-| `--max_lines` | Maximum lines per file | 1000 |
-| `--max_file_size` | Maximum file size in KB | 1024 |
+| Option            | Description                                       | Default                          |
+|-------------------|---------------------------------------------------|----------------------------------|
+| `--path`          | Directory(s) to scan (can be used multiple times) | Project root                     |
+| `--output_file`   | Output file path                                  | `snapshot_YYYY_MM_DD_HHMMSS.mcp` |
+| `--max_files`     | Maximum files to process                          | 500                              |
+| `--max_lines`     | Maximum lines per file                            | 1000                             |
+| `--max_file_size` | Maximum file size in KB                           | 1024                             |
 
 ### Output Format
 
@@ -197,7 +197,8 @@ valksor:
             - "vendor/"
             - "node_modules/"
             - ".coverage"
-
+```
+```yaml
 # config/packages/prod/valksor.yaml
 valksor:
     snapshot:
@@ -359,12 +360,14 @@ Set appropriate limits for your use case:
 max_files: 100
 max_lines: 1000
 max_file_size: 1024
-
+```
+```yaml
 # For comprehensive documentation
 max_files: 1000
 max_lines: 5000
 max_file_size: 2048
-
+```
+```yaml
 # For quick overviews
 max_files: 50
 max_lines: 500
