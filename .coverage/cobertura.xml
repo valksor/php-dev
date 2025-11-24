@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.39375568354047" branch-rate="0" lines-covered="1299" lines-valid="3299" branches-covered="0" branches-valid="0" complexity="1205" version="0.4" timestamp="1763846803">
+<coverage line-rate="0.40193998181267" branch-rate="0" lines-covered="1326" lines-valid="3299" branches-covered="0" branches-valid="0" complexity="1205" version="0.4" timestamp="0">
   <sources>
     <source>/var/www/html/valksor-dev/src/ValksorDev</source>
   </sources>
@@ -3463,9 +3463,9 @@
     <package name="Build/Service/DevServiceInterface.php" line-rate="0" branch-rate="0" complexity="0">
       <classes/>
     </package>
-    <package name="Build/Service/DevWatchService.php" line-rate="0.31645569620253" branch-rate="0" complexity="74">
+    <package name="Build/Service/DevWatchService.php" line-rate="0.4873417721519" branch-rate="0" complexity="74">
       <classes>
-        <class name="ValksorDev\Build\Service\DevWatchService" filename="Build/Service/DevWatchService.php" line-rate="0.31645569620253" branch-rate="0" complexity="74">
+        <class name="ValksorDev\Build\Service\DevWatchService" filename="Build/Service/DevWatchService.php" line-rate="0.4873417721519" branch-rate="0" complexity="74">
           <methods>
             <method name="__construct" signature="ParameterBagInterface $parameterBag, ProviderRegistry $providerRegistry, ?ConsoleCommandBuilder $commandBuilder" line-rate="1" branch-rate="0" complexity="1">
               <lines>
@@ -3492,7 +3492,7 @@
                 <line number="123" hits="7"/>
               </lines>
             </method>
-            <method name="start" signature="" line-rate="0.32307692307692" branch-rate="0" complexity="25">
+            <method name="start" signature="" line-rate="0.61538461538462" branch-rate="0" complexity="25">
               <lines>
                 <line number="144" hits="7"/>
                 <line number="148" hits="7"/>
@@ -3513,29 +3513,29 @@
                 <line number="184" hits="1"/>
                 <line number="186" hits="1"/>
                 <line number="188" hits="1"/>
-                <line number="189" hits="1"/>
-                <line number="191" hits="1"/>
-                <line number="195" hits="0"/>
-                <line number="196" hits="0"/>
-                <line number="198" hits="0"/>
-                <line number="199" hits="0"/>
-                <line number="200" hits="0"/>
-                <line number="201" hits="0"/>
-                <line number="202" hits="0"/>
-                <line number="205" hits="0"/>
-                <line number="207" hits="0"/>
-                <line number="208" hits="0"/>
-                <line number="209" hits="0"/>
-                <line number="212" hits="0"/>
-                <line number="213" hits="0"/>
-                <line number="215" hits="0"/>
-                <line number="218" hits="0"/>
-                <line number="221" hits="0"/>
-                <line number="222" hits="0"/>
-                <line number="226" hits="0"/>
-                <line number="228" hits="0"/>
-                <line number="229" hits="0"/>
-                <line number="231" hits="0"/>
+                <line number="189" hits="0"/>
+                <line number="191" hits="0"/>
+                <line number="195" hits="1"/>
+                <line number="196" hits="1"/>
+                <line number="198" hits="1"/>
+                <line number="199" hits="1"/>
+                <line number="200" hits="1"/>
+                <line number="201" hits="1"/>
+                <line number="202" hits="1"/>
+                <line number="205" hits="1"/>
+                <line number="207" hits="1"/>
+                <line number="208" hits="1"/>
+                <line number="209" hits="1"/>
+                <line number="212" hits="1"/>
+                <line number="213" hits="1"/>
+                <line number="215" hits="1"/>
+                <line number="218" hits="1"/>
+                <line number="221" hits="1"/>
+                <line number="222" hits="1"/>
+                <line number="226" hits="1"/>
+                <line number="228" hits="1"/>
+                <line number="229" hits="1"/>
+                <line number="231" hits="1"/>
                 <line number="235" hits="0"/>
                 <line number="236" hits="0"/>
                 <line number="239" hits="0"/>
@@ -3633,7 +3633,7 @@
                 <line number="415" hits="0"/>
               </lines>
             </method>
-            <method name="runSseCommand" signature="" line-rate="0.73333333333333" branch-rate="0" complexity="7">
+            <method name="runSseCommand" signature="" line-rate="0.86666666666667" branch-rate="0" complexity="7">
               <lines>
                 <line number="444" hits="1"/>
                 <line number="445" hits="0"/>
@@ -3646,28 +3646,28 @@
                 <line number="461" hits="1"/>
                 <line number="462" hits="1"/>
                 <line number="465" hits="1"/>
-                <line number="468" hits="1"/>
-                <line number="473" hits="0"/>
-                <line number="474" hits="0"/>
-                <line number="479" hits="0"/>
+                <line number="468" hits="0"/>
+                <line number="473" hits="1"/>
+                <line number="474" hits="1"/>
+                <line number="479" hits="1"/>
               </lines>
             </method>
-            <method name="setProviderIo" signature="object $provider, SymfonyStyle $io" line-rate="0" branch-rate="0" complexity="2">
+            <method name="setProviderIo" signature="object $provider, SymfonyStyle $io" line-rate="0.5" branch-rate="0" complexity="2">
               <lines>
-                <line number="489" hits="0"/>
+                <line number="489" hits="1"/>
                 <line number="490" hits="0"/>
               </lines>
             </method>
-            <method name="startProviderProcess" signature="string $name, object $provider, array $options" line-rate="0" branch-rate="0" complexity="7">
+            <method name="startProviderProcess" signature="string $name, object $provider, array $options" line-rate="0.33333333333333" branch-rate="0" complexity="7">
               <lines>
-                <line number="502" hits="0"/>
+                <line number="502" hits="1"/>
                 <line number="503" hits="0"/>
                 <line number="504" hits="0"/>
                 <line number="505" hits="0"/>
-                <line number="506" hits="0"/>
-                <line number="507" hits="0"/>
-                <line number="509" hits="0"/>
-                <line number="510" hits="0"/>
+                <line number="506" hits="1"/>
+                <line number="507" hits="1"/>
+                <line number="509" hits="1"/>
+                <line number="510" hits="1"/>
                 <line number="514" hits="0"/>
                 <line number="515" hits="0"/>
                 <line number="518" hits="0"/>
@@ -3703,29 +3703,29 @@
             <line number="184" hits="1"/>
             <line number="186" hits="1"/>
             <line number="188" hits="1"/>
-            <line number="189" hits="1"/>
-            <line number="191" hits="1"/>
-            <line number="195" hits="0"/>
-            <line number="196" hits="0"/>
-            <line number="198" hits="0"/>
-            <line number="199" hits="0"/>
-            <line number="200" hits="0"/>
-            <line number="201" hits="0"/>
-            <line number="202" hits="0"/>
-            <line number="205" hits="0"/>
-            <line number="207" hits="0"/>
-            <line number="208" hits="0"/>
-            <line number="209" hits="0"/>
-            <line number="212" hits="0"/>
-            <line number="213" hits="0"/>
-            <line number="215" hits="0"/>
-            <line number="218" hits="0"/>
-            <line number="221" hits="0"/>
-            <line number="222" hits="0"/>
-            <line number="226" hits="0"/>
-            <line number="228" hits="0"/>
-            <line number="229" hits="0"/>
-            <line number="231" hits="0"/>
+            <line number="189" hits="0"/>
+            <line number="191" hits="0"/>
+            <line number="195" hits="1"/>
+            <line number="196" hits="1"/>
+            <line number="198" hits="1"/>
+            <line number="199" hits="1"/>
+            <line number="200" hits="1"/>
+            <line number="201" hits="1"/>
+            <line number="202" hits="1"/>
+            <line number="205" hits="1"/>
+            <line number="207" hits="1"/>
+            <line number="208" hits="1"/>
+            <line number="209" hits="1"/>
+            <line number="212" hits="1"/>
+            <line number="213" hits="1"/>
+            <line number="215" hits="1"/>
+            <line number="218" hits="1"/>
+            <line number="221" hits="1"/>
+            <line number="222" hits="1"/>
+            <line number="226" hits="1"/>
+            <line number="228" hits="1"/>
+            <line number="229" hits="1"/>
+            <line number="231" hits="1"/>
             <line number="235" hits="0"/>
             <line number="236" hits="0"/>
             <line number="239" hits="0"/>
@@ -3816,20 +3816,20 @@
             <line number="461" hits="1"/>
             <line number="462" hits="1"/>
             <line number="465" hits="1"/>
-            <line number="468" hits="1"/>
-            <line number="473" hits="0"/>
-            <line number="474" hits="0"/>
-            <line number="479" hits="0"/>
-            <line number="489" hits="0"/>
+            <line number="468" hits="0"/>
+            <line number="473" hits="1"/>
+            <line number="474" hits="1"/>
+            <line number="479" hits="1"/>
+            <line number="489" hits="1"/>
             <line number="490" hits="0"/>
-            <line number="502" hits="0"/>
+            <line number="502" hits="1"/>
             <line number="503" hits="0"/>
             <line number="504" hits="0"/>
             <line number="505" hits="0"/>
-            <line number="506" hits="0"/>
-            <line number="507" hits="0"/>
-            <line number="509" hits="0"/>
-            <line number="510" hits="0"/>
+            <line number="506" hits="1"/>
+            <line number="507" hits="1"/>
+            <line number="509" hits="1"/>
+            <line number="510" hits="1"/>
             <line number="514" hits="0"/>
             <line number="515" hits="0"/>
             <line number="518" hits="0"/>
