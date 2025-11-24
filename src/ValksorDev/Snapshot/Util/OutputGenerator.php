@@ -21,6 +21,7 @@ use function array_sum;
 use function arsort;
 use function basename;
 use function count;
+use function date;
 use function end;
 use function explode;
 use function implode;
@@ -30,8 +31,10 @@ use function ksort;
 use function round;
 use function str_repeat;
 use function strtolower;
+use function strtoupper;
 
 use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**

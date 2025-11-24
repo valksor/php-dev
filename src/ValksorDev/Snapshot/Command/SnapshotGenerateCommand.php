@@ -21,13 +21,18 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Valksor\Bundle\Command\AbstractCommand;
 use ValksorDev\Snapshot\Service\SnapshotService;
 
+use function array_map;
 use function explode;
 use function getcwd;
 use function is_array;
 use function is_dir;
+use function max;
 use function realpath;
 use function str_contains;
+use function substr;
 use function trim;
+
+use const PHP_OS;
 
 /**
  * Console command for generating MCP (Markdown Context Pack) snapshots.
@@ -226,6 +231,7 @@ final class SnapshotGenerateCommand extends AbstractCommand
             'no_gitignore' => $input->getOption('no-gitignore'),
             'include_vendors' => $input->getOption('include-vendors'),
             'include_hidden' => $input->getOption('include-hidden'),
+            'strip_comments' => true,
         ];
 
         // Convert numeric options with proper validation

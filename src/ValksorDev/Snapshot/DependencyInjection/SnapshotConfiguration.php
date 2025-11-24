@@ -136,7 +136,7 @@ class SnapshotConfiguration extends AbstractDependencyConfiguration
                     'node_modules', 'vendor',
 
                     // Development and IDE directories (anywhere in project)
-                    '.git', '.idea', '.vscode', '.webpack-cache', '.cache', '.env', '.env.local',
+                    '.git', '.idea', '.vscode', '.webpack-cache', '.cache', '.env', '.env.local', '.gitignore', '.gitkeep',
 
                     // Lock files and build artifacts
                     '.neon', '.lock', 'LICENSE', '.md', 'reference.php', '.mcp',

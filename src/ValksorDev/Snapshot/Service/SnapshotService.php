@@ -20,6 +20,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Valksor\Bundle\Service\PathFilter;
 use Valksor\Bundle\Service\PathFilterHelper;
+use ValksorDev\Snapshot\Util\ContentProcessor;
 use ValksorDev\Snapshot\Util\OutputGenerator;
 
 use function array_column;
@@ -30,17 +31,26 @@ use function count;
 use function date;
 use function dirname;
 use function explode;
+use function file_get_contents;
 use function file_put_contents;
+use function filesize;
 use function getmypid;
 use function implode;
 use function is_array;
 use function is_dir;
+use function is_file;
 use function mkdir;
+use function pathinfo;
 use function realpath;
+use function round;
 use function str_contains;
 use function str_replace;
 use function strlen;
+use function strtolower;
+use function substr_count;
 use function unlink;
+
+use const PATHINFO_EXTENSION;
 
 /**
  * Service for generating MCP (Markdown Context Pack) snapshots of projects.
@@ -219,6 +229,7 @@ final class SnapshotService
         string $path,
         string $relativePath,
         int $maxLines,
+        array $config,
     ): ?array {
         try {
             $content = file_get_contents($path);
@@ -230,6 +241,14 @@ final class SnapshotService
             // Check for binary content in case file filter missed it
             if (str_contains($content, "\x00")) {
                 return null;
+            }
+
+            // Apply content processing if strip_comments is enabled
+            $stripComments = $config['strip_comments'] ?? false;
+
+            if ($stripComments) {
+                $extension = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
+                $content = ContentProcessor::processContent($content, $extension, true); // Preserve empty lines for structure
             }
 
             // Limit lines if specified
@@ -324,7 +343,7 @@ final class SnapshotService
                 }
 
                 // Process file
-                $fileData = $this->processFile($path, $relativePath, $maxLines);
+                $fileData = $this->processFile($path, $relativePath, $maxLines, $config);
 
                 if (null !== $fileData) {
                     $files[] = $fileData;
