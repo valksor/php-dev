@@ -14,7 +14,7 @@ namespace ValksorDev\Build\Tests;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use ValksorDev\Build\Service\PathFilter;
+use Valksor\Bundle\Service\PathFilter;
 use ValksorDev\Build\Service\RecursiveInotifyWatcher;
 
 use function function_exists;

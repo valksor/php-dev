@@ -14,10 +14,10 @@ namespace ValksorDev\Build\Service;
 
 use Exception;
 use JsonException;
-use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Valksor\Bundle\Service\PathFilter;
 use Valksor\Component\Sse\Service\AbstractService;
 
 use function array_key_exists;
@@ -349,7 +349,15 @@ final class HotReloadService extends AbstractService
         $mergedFilenames = array_merge($defaultExclusions['filenames'], $customFilenames);
         $mergedExtensions = array_merge($defaultExclusions['extensions'], $customExtensions);
 
-        return new PathFilter($mergedDirs, $mergedGlobs, $mergedFilenames, $mergedExtensions, $this->projectDir);
+        // Create unified patterns array for the new PathFilter
+        $allPatterns = array_merge(
+            $mergedDirs,
+            $mergedGlobs,
+            $mergedFilenames,
+            $mergedExtensions,
+        );
+
+        return new PathFilter($allPatterns, $this->projectDir);
     }
 
     private function determineReloadDelay(
@@ -421,23 +429,16 @@ final class HotReloadService extends AbstractService
     }
 
     /**
-     * Extract default exclusions from PathFilter using reflection.
+     * Extract default exclusions from PathFilter using compatibility methods.
      */
     private function extractDefaultExclusions(
         PathFilter $filter,
     ): array {
-        $reflection = new ReflectionClass($filter);
-
-        $directories = $reflection->getProperty('ignoredDirectories')->getValue($filter);
-        $globs = $reflection->getProperty('ignoredGlobs')->getValue($filter);
-        $filenames = $reflection->getProperty('ignoredFilenames')->getValue($filter);
-        $extensions = $reflection->getProperty('ignoredExtensions')->getValue($filter);
-
         return [
-            'directories' => $directories,
-            'globs' => $globs,
-            'filenames' => $filenames,
-            'extensions' => $extensions,
+            'directories' => $filter->getIgnoredDirectories(),
+            'globs' => $filter->getIgnoredGlobs(),
+            'filenames' => $filter->getIgnoredFilenames(),
+            'extensions' => $filter->getIgnoredExtensions(),
         ];
     }
 

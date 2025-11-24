@@ -13,6 +13,7 @@
 namespace ValksorDev\Build\Service;
 
 use RuntimeException;
+use Valksor\Bundle\Service\PathFilter;
 
 use function array_key_exists;
 use function array_keys;
@@ -291,10 +292,8 @@ final class RecursiveInotifyWatcher
 
         // Handle directory creation events - automatically watch new subdirectories
         // This enables true recursive watching without manual rescanning
-        if (($event['mask'] & IN_ISDIR) === IN_ISDIR) {
-            if (($event['mask'] & (IN_CREATE | IN_MOVED_TO)) !== 0) {
-                $this->registerDirectoryRecursively($fullPath);
-            }
+        if ((($event['mask'] & IN_ISDIR) === IN_ISDIR) && ($event['mask'] & (IN_CREATE | IN_MOVED_TO)) !== 0) {
+            $this->registerDirectoryRecursively($fullPath);
         }
 
         // Handle watched directory deletion or movement events

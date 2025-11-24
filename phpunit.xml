@@ -19,6 +19,7 @@
             <!-- Function library tests -->
             <directory>src/ValksorDev/Build/Tests</directory>
             <directory>src/ValksorDev/PhpCsFixerCustomFixers/Tests</directory>
+            <directory>src/ValksorDev/SnapShot/Tests</directory>
         </testsuite>
     </testsuites>
 

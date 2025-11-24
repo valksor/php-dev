@@ -13,8 +13,7 @@
 namespace ValksorDev\Build\Tests;
 
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
-use ValksorDev\Build\Service\PathFilter;
+use Valksor\Bundle\Service\PathFilter;
 
 final class PathFilterTest extends TestCase
 {
@@ -33,21 +32,15 @@ final class PathFilterTest extends TestCase
 
         self::assertFalse($filter->shouldIgnorePath(null));
 
-        $ref = new ReflectionClass(PathFilter::class);
-        $ignoredFilenames = $ref->getProperty('ignoredFilenames')->getValue($filter);
+        // Use backward compatibility methods instead of reflection
+        $ignoredFilenames = $filter->getIgnoredFilenames();
         self::assertContains('.gitignore', $ignoredFilenames);
 
-        $ignoredExtensions = $ref->getProperty('ignoredExtensions')->getValue($filter);
+        $ignoredExtensions = $filter->getIgnoredExtensions();
         self::assertContains('.md', $ignoredExtensions);
-
-        self::assertStringContainsString(
-            'src/ValksorDev/Build/Service/PathFilter.php',
-            $ref->getFileName(),
-        );
 
         $basename = strtolower(pathinfo('app/.gitignore', PATHINFO_BASENAME));
         self::assertSame('.gitignore', $basename);
-        self::assertContains($basename, $ignoredFilenames);
         self::assertContains($basename, $ignoredFilenames);
 
         $result = $filter->shouldIgnorePath('app/.gitignore');

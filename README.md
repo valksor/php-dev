@@ -20,6 +20,10 @@
 <td><a href="https://github.com/valksor/php-dev-cs-fixer-custom-fixers">php-dev-cs-fixer-custom-fixers</a></td>
 <td><a href="https://coveralls.io/github/valksor/php-dev-cs-fixer-custom-fixers?branch=master"><img src="https://coveralls.io/repos/github/valksor/php-dev-cs-fixer-custom-fixers/badge.svg?branch=master" alt="Coverage"></a></td>
 </tr>
+<tr>
+<td><a href="https://github.com/valksor/php-dev-snapshot">php-dev-snapshot</a></td>
+<td><a href="https://coveralls.io/github/valksor/php-dev-snapshot?branch=master"><img src="https://coveralls.io/repos/github/valksor/php-dev-snapshot/badge.svg?branch=master" alt="Coverage"></a></td>
+</tr>
 </table>
 
 Modern development toolkit for Symfony applications that provides hot reloading, asset compilation, and automated build tools to speed up your development workflow.

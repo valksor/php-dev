@@ -1,0 +1,10 @@
+.coverage/*
+!.coverage/cobertura.xml
+!.coverage/junit.xml
+.php-cs-fixer.cache
+.phpunit.cache/
+.phpunit.result.cache
+composer.lock
+composer.phar
+var/
+vendor/

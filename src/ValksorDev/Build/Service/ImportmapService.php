@@ -19,6 +19,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Valksor\Bundle\Service\PathFilter;
 use Valksor\Component\Sse\Service\AbstractService;
 use Valksor\FullStack;
 

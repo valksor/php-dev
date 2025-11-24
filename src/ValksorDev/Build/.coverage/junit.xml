@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/var/www/html/valksor-dev/src/ValksorDev/Build/phpunit.xml" tests="148" assertions="228" errors="0" failures="0" skipped="1" time="0.001000">
-    <testsuite name="Valksor Bundle" tests="148" assertions="228" errors="0" failures="0" skipped="1" time="0.001000">
+  <testsuite name="/var/www/html/valksor-dev/src/ValksorDev/Build/phpunit.xml" tests="148" assertions="226" errors="0" failures="0" skipped="1" time="0.001000">
+    <testsuite name="Valksor Bundle" tests="148" assertions="226" errors="0" failures="0" skipped="1" time="0.001000">
       <testsuite name="ValksorDev\Build\Tests\AbstractCommandTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/AbstractCommandTest.php" tests="5" assertions="6" errors="0" failures="0" skipped="0" time="0.001000">
         <testcase name="testCommandInheritance" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/AbstractCommandTest.php" line="31" class="ValksorDev\Build\Tests\AbstractCommandTest" classname="ValksorDev.Build.Tests.AbstractCommandTest" assertions="2" time="0.001000"/>
         <testcase name="testGetProviderRegistry" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/AbstractCommandTest.php" line="45" class="ValksorDev\Build\Tests\AbstractCommandTest" classname="ValksorDev.Build.Tests.AbstractCommandTest" assertions="1" time="0.001000"/>
@@ -110,9 +110,9 @@
         <testcase name="testWithDifferentExtensions" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadServiceTest.php" line="165" class="ValksorDev\Build\Tests\HotReloadServiceTest" classname="ValksorDev.Build.Tests.HotReloadServiceTest" assertions="2" time="0.001000"/>
         <testcase name="testWithProductionEnvironment" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/HotReloadServiceTest.php" line="200" class="ValksorDev\Build\Tests\HotReloadServiceTest" classname="ValksorDev.Build.Tests.HotReloadServiceTest" assertions="0" time="0.001000"/>
       </testsuite>
-      <testsuite name="ValksorDev\Build\Tests\PathFilterTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" tests="2" assertions="16" errors="0" failures="0" skipped="0" time="0.001000">
-        <testcase name="testDirectoryFiltering" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" line="21" class="ValksorDev\Build\Tests\PathFilterTest" classname="ValksorDev.Build.Tests.PathFilterTest" assertions="3" time="0.001000"/>
-        <testcase name="testPathFilteringRules" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" line="30" class="ValksorDev\Build\Tests\PathFilterTest" classname="ValksorDev.Build.Tests.PathFilterTest" assertions="13" time="0.001000"/>
+      <testsuite name="ValksorDev\Build\Tests\PathFilterTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" tests="2" assertions="14" errors="0" failures="0" skipped="0" time="0.001000">
+        <testcase name="testDirectoryFiltering" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" line="20" class="ValksorDev\Build\Tests\PathFilterTest" classname="ValksorDev.Build.Tests.PathFilterTest" assertions="3" time="0.001000"/>
+        <testcase name="testPathFilteringRules" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/PathFilterTest.php" line="29" class="ValksorDev\Build\Tests\PathFilterTest" classname="ValksorDev.Build.Tests.PathFilterTest" assertions="11" time="0.001000"/>
       </testsuite>
       <testsuite name="ValksorDev\Build\Tests\ProcessManagerTest" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" tests="13" assertions="24" errors="0" failures="0" skipped="0" time="0.001000">
         <testcase name="testAddProcess" file="/var/www/html/valksor-dev/src/ValksorDev/Build/Tests/ProcessManagerTest.php" line="29" class="ValksorDev\Build\Tests\ProcessManagerTest" classname="ValksorDev.Build.Tests.ProcessManagerTest" assertions="2" time="0.001000"/>

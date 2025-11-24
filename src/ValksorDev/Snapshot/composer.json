@@ -1,0 +1,52 @@
+{
+    "name": "valksor/php-dev-snapshot",
+    "description": "MCP snapshot generation tool for AI-optimized project documentation",
+    "license": "BSD-3-Clause",
+    "type": "library",
+    "keywords": [
+        "snapshot",
+        "mcp",
+        "markdown",
+        "documentation",
+        "ai",
+        "code-analysis",
+        "project-snapshot",
+        "valksor"
+    ],
+    "homepage": "https://github.com/valksor/php-dev-snapshot",
+    "require": {
+        "php": ">=8.4",
+        "ext-dom": "*",
+        "ext-mbstring": "*",
+        "symfony/config": "*",
+        "symfony/console": "*",
+        "symfony/dependency-injection": "*",
+        "symfony/finder": "*",
+        "valksor/bundle": "^1.0",
+        "valksor/functions-local": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.0",
+        "roave/security-advisories": "dev-latest"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": false,
+    "autoload": {
+        "psr-4": {
+            "ValksorDev\\Snapshot\\": "."
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ValksorDev\\Snapshot\\Tests\\": "Tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}

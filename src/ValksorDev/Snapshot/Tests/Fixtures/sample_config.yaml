@@ -1,0 +1,71 @@
+# Sample configuration file for testing snapshot functionality
+# This file demonstrates YAML content that should be included in snapshots
+
+test_project:
+  name: "Snapshot Test Project"
+  version: "1.0.0"
+  description: "A test project for validating snapshot generation"
+
+  # Configuration settings
+  settings:
+    enabled: true
+    debug_mode: false
+    log_level: "info"
+
+    # File processing limits
+    limits:
+      max_files: 100
+      max_lines: 500
+      max_file_size: 512
+
+  # Directories to include
+  directories:
+    - "src/"
+    - "config/"
+    - "templates/"
+
+  # Patterns to exclude
+  exclude_patterns:
+    - "vendor/"
+    - "tests/"
+    - "*.cache"
+    - ".tmp"
+    - "coverage/"
+
+  # Feature flags
+  features:
+    advanced_filtering: true
+    binary_detection: true
+    content_truncation: false
+
+# Database configuration
+database:
+  driver: "mysql"
+  host: "localhost"
+  port: 3306
+  database: "test_snapshot"
+  username: "test_user"
+  password: "%env(DB_PASSWORD)%"
+
+  # Connection pool settings
+  pool:
+    min_connections: 1
+    max_connections: 10
+    idle_timeout: 60
+
+# Cache configuration
+cache:
+  adapter: "redis"
+  host: "localhost"
+  port: 6379
+  ttl: 3600
+
+# Logging configuration
+logging:
+  level: "debug"
+  handlers:
+    - type: "file"
+      path: "var/log/snapshot.log"
+      max_files: 10
+    - type: "console"
+      format: "detailed"

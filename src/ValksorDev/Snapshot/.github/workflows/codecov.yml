@@ -1,0 +1,26 @@
+on:
+    push:
+        branches: [ master ]
+    pull_request:
+
+permissions:
+    contents: write
+
+jobs:
+    coverage:
+        name: Upload coverage to Coveralls
+        runs-on: self-mini
+
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v5
+                with:
+                    fetch-depth: 0
+
+            # Upload your existing Clover XML to Coveralls
+            -   name: Coveralls
+                uses: coverallsapp/github-action@main
+                with:
+                    github-token: ${{ secrets.GITHUB_TOKEN }}
+                    file: .coverage/cobertura.xml
+                    format: cobertura
