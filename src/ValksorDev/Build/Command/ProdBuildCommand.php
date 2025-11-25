@@ -19,6 +19,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use ValksorDev\Build\Provider\IoAwareInterface;
 
 use function count;
 use function implode;
@@ -74,6 +75,16 @@ final class ProdBuildCommand extends AbstractCommand
 
             // Force production environment for all providers
             $options['environment'] = 'prod';
+
+            // Enable minification for importmap service in production builds
+            if ('importmap' === $name) {
+                $options['minify'] = true;
+            }
+
+            // Set IO for providers that need it
+            if ($provider instanceof IoAwareInterface) {
+                $provider->setIo($io);
+            }
 
             try {
                 $result = $provider->build($options);

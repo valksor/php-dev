@@ -48,19 +48,19 @@ use const SIGTERM;
  */
 final class ProcessManager
 {
-    private const FAILURE_WINDOW_SECONDS = 30;
+    private const int FAILURE_WINDOW_SECONDS = 30;
 
     /**
      * Configuration for restart logic.
      */
-    private const MAX_FAILURES_IN_WINDOW = 5;
+    private const int MAX_FAILURES_IN_WINDOW = 5;
 
     /**
      * Maximum number of lines to keep in output buffers per service.
      * Prevents memory exhaustion from long-running services.
      */
     private const int MAX_OUTPUT_LINES = 100;
-    private const SUCCESS_RESET_SECONDS = 3600; // 1 hour
+    // 1 hour
 
     /**
      * Error output buffers for capturing service stderr output.
@@ -259,12 +259,7 @@ final class ProcessManager
         bool $isInteractive,
         string $serviceName = 'Service',
     ): int {
-        // The first argument is the command name (e.g., 'valksor:tailwind')
-        $commandName = $arguments[0];
-        $commandArgs = array_slice($arguments, 1);
-
-        $process = $this->commandBuilder?->build($commandName, [])
-            ?? new Process(['php', 'bin/console', ...$arguments]);
+        $process = new Process(['php', 'bin/console', ...$arguments]);
 
         if ($isInteractive) {
             // Interactive mode - start process and let it run in background
@@ -623,7 +618,7 @@ final class ProcessManager
         $failures = $this->failureHistory[$processName] ?? [];
 
         // Remove old failures outside the window
-        $recentFailures = array_filter($failures, fn ($timestamp) => $now - $timestamp <= self::FAILURE_WINDOW_SECONDS);
+        $recentFailures = array_filter($failures, static fn ($timestamp) => $now - $timestamp <= self::FAILURE_WINDOW_SECONDS);
 
         // Update failure history with only recent failures
         $this->failureHistory[$processName] = $recentFailures;
@@ -781,10 +776,9 @@ final class ProcessManager
         string $serviceName,
     ): void {
         $output = $this->outputBuffers[$serviceName] ?? [];
-        $errors = $this->errorBuffers[$serviceName] ?? [];
 
         // Display error output first (more important)
-        foreach ($errors as $errorLine) {
+        foreach ($this->errorBuffers[$serviceName] ?? [] as $errorLine) {
             $this->io?->text(sprintf('  <error>[%s] %s</error>', strtoupper($serviceName), $errorLine));
         }
 

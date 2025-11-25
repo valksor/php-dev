@@ -179,7 +179,7 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                 'provider' => 'binaries',
                 'flags' => ['init' => true, 'dev' => false, 'prod' => true],
                 'options' => [
-                    'required' => ['tailwindcss', 'esbuild', ],
+                    'required' => [],
                     'cache_duration' => 3600,
                 ],
             ],
