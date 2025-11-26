@@ -21,7 +21,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use ValksorDev\Build\Binary\LucideBinary;
+use ValksorDev\Build\Binary\BinaryRegistry;
 use ValksorDev\Build\Provider\ProviderRegistry;
 
 use function array_diff;
@@ -60,6 +60,7 @@ final class IconsGenerateCommand extends AbstractCommand
     public function __construct(
         ParameterBagInterface $parameterBag,
         ProviderRegistry $providerRegistry,
+        private readonly BinaryRegistry $binaryRegistry,
     ) {
         parent::__construct($parameterBag, $providerRegistry);
         $this->sharedIdentifier = $this->getInfrastructureDir();
@@ -78,7 +79,7 @@ final class IconsGenerateCommand extends AbstractCommand
     ): int {
         $this->io = $this->createSymfonyStyle($input, $output);
         $projectRoot = $this->resolveProjectRoot();
-        $this->cacheRoot = $projectRoot . '/var/lucide';
+        $this->cacheRoot = $projectRoot . '/var/lucide-static';
         $this->ensureDirectory($this->cacheRoot);
 
         $lucideDir = $this->ensureLucideIcons();
@@ -351,11 +352,31 @@ final class IconsGenerateCommand extends AbstractCommand
             return $existingIconsDir;
         }
 
-        // If no existing icons found, download them using BinaryAssetManager
+        // If no existing icons found, download lucide-static using generic provider
         try {
-            LucideBinary::createForLucide($this->cacheRoot)->ensureLatest([$this->io, 'text']);
+            $genericProvider = $this->binaryRegistry->getGenericNpmProvider();
 
-            // Look for the icons directory
+            if (!$genericProvider) {
+                $this->io->warning('Generic NPM provider not available.');
+
+                return null;
+            }
+
+            // Create manager for lucide-static only
+            $projectRoot = $this->resolveProjectRoot();
+            $varDir = $projectRoot . '/var';
+            $manager = $genericProvider->createManager($varDir, 'lucide-static');
+
+            if (!$manager) {
+                $this->io->warning('lucide-static not configured in generic provider.');
+
+                return null;
+            }
+
+            // Download lucide-static only
+            $manager->ensureLatest([$this->io, 'text']);
+
+            // Look for the icons directory in the generic provider structure
             $iconsDir = $this->locateIconsDirectory($this->cacheRoot);
 
             if (null === $iconsDir) {
@@ -377,11 +398,11 @@ final class IconsGenerateCommand extends AbstractCommand
             return null;
         }
 
-        // Look for icons directory in the standard location where BinaryAssetManager downloads
-        $iconsDir = $this->cacheRoot . '/icons';
+        // For lucide-static, icons are always in the icons subdirectory
+        $iconsSubdir = $this->cacheRoot . '/icons';
 
-        if ($this->iconDirectoryLooksValid($iconsDir)) {
-            return $iconsDir;
+        if ($this->iconDirectoryLooksValid($iconsSubdir)) {
+            return $iconsSubdir;
         }
 
         return null;
@@ -477,11 +498,11 @@ final class IconsGenerateCommand extends AbstractCommand
     private function locateIconsDirectory(
         string $baseDir,
     ): ?string {
-        // Since BinaryAssetManager downloads to var/lucide, just look for icons subdirectory
-        $iconsDir = $baseDir . '/icons';
+        // For lucide-static, icons are always in the icons subdirectory
+        $iconsSubdir = $baseDir . '/icons';
 
-        if ($this->iconDirectoryLooksValid($iconsDir)) {
-            return $iconsDir;
+        if ($this->iconDirectoryLooksValid($iconsSubdir)) {
+            return $iconsSubdir;
         }
 
         return null;

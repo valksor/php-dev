@@ -15,6 +15,7 @@ namespace ValksorDev\Build\Binary;
 use DateTimeImmutable;
 use JsonException;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Valksor\Functions\Local\Traits\_MkDir;
 use ZipArchive;
 
@@ -33,9 +34,11 @@ use function json_encode;
 use function ltrim;
 use function php_uname;
 use function rename;
+use function sleep;
 use function sprintf;
 use function str_contains;
 use function stream_context_create;
+use function strpos;
 use function sys_get_temp_dir;
 use function uniqid;
 use function unlink;
@@ -70,6 +73,7 @@ final class BinaryAssetManager
      */
     public function __construct(
         private readonly array $toolConfig,
+        private readonly ?ParameterBagInterface $parameterBag = null,
     ) {
     }
 
@@ -104,7 +108,7 @@ final class BinaryAssetManager
         if ('npm' === $this->toolConfig['source']) {
             $this->downloadNpmAsset($latest['version'], $targetDir);
         } elseif ('github-zip' === $this->toolConfig['source'] || in_array($downloadStrategy, ['tag', 'commit'], true)) {
-            $this->downloadGithubZipAsset($latest['tag'], $latest['version'], $targetDir);
+            $this->downloadGithubZipAsset($latest['tag'], $targetDir);
         } else {
             foreach ($this->toolConfig['assets'] as $assetConfig) {
                 $this->downloadAsset($latest['tag'], $assetConfig, $targetDir);
@@ -218,19 +222,13 @@ final class BinaryAssetManager
 
     private function downloadGithubZipAsset(
         string $tag,
-        string $version,
         string $targetDir,
     ): void {
         $downloadStrategy = $this->toolConfig['download_strategy'] ?? 'release';
         $assetConfig = $this->toolConfig['assets'][0];
 
         $url = match ($downloadStrategy) {
-            'tag' => sprintf(
-                'https://api.github.com/repos/%s/tarball/%s',
-                $this->toolConfig['repo'],
-                $tag,
-            ),
-            'commit' => sprintf(
+            'tag', 'commit' => sprintf(
                 'https://api.github.com/repos/%s/tarball/%s',
                 $this->toolConfig['repo'],
                 $tag,
@@ -289,14 +287,12 @@ final class BinaryAssetManager
         string $targetDir,
     ): void {
         $assetConfig = $this->toolConfig['assets'][0];
-        $platform = self::detectPlatform();
 
         // Use the actual npm package from configuration instead of hardcoded @esbuild
         $npmPackage = $this->toolConfig['npm_package'];
 
         // For scoped packages (@scope/package), use the correct URL format
         if (str_starts_with($npmPackage, '@')) {
-            $scope = substr($npmPackage, 0, strpos($npmPackage, '/'));
             $packageName = substr($npmPackage, strpos($npmPackage, '/') + 1);
             $url = sprintf('https://registry.npmjs.org/%s/-/%s-%s.tgz', $npmPackage, $packageName, $version);
         } else {
@@ -383,6 +379,23 @@ final class BinaryAssetManager
         }
 
         $_helper->mkdir($directory);
+    }
+
+    /**
+     * Extract HTTP status code from response headers.
+     */
+    private function extractHttpStatusCode(
+        array $headers,
+    ): int {
+        foreach ($headers as $header) {
+            if (str_starts_with($header, 'HTTP/')) {
+                $parts = explode(' ', $header);
+
+                return (int) ($parts[1] ?? 0);
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -476,23 +489,103 @@ final class BinaryAssetManager
             return $this->fetchLatestNpmVersion();
         }
 
+        $maxRetries = 3;
+        $baseDelay = 2; // seconds
+
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                return $this->fetchLatestReleaseWithRetry($attempt);
+            } catch (RuntimeException $exception) {
+                // Don't retry on rate limit errors with explicit guidance
+                if ($this->isRateLimitError($exception->getMessage())) {
+                    throw $exception;
+                }
+
+                // Retry on other failures with exponential backoff
+                if ($attempt < $maxRetries) {
+                    $delay = $baseDelay ** $attempt;
+                    sleep($delay);
+
+                    continue;
+                }
+
+                throw $exception;
+            }
+        }
+
+        throw new RuntimeException(sprintf('Failed to fetch latest release for %s after %d attempts.', $this->toolConfig['name'], $maxRetries));
+    }
+
+    /**
+     * @return array{tag: string, version: string}
+     */
+    private function fetchLatestReleaseWithRetry(
+        int $attempt,
+    ): array {
         $apiUrl = sprintf('https://api.github.com/repos/%s/releases/latest', $this->toolConfig['repo']);
+
+        // Build headers with optional GitHub token
+        $headers = [
+            'User-Agent: valksor-binary-manager',
+            'Accept: application/vnd.github+json',
+        ];
+
+        $githubToken = $this->getGitHubToken();
+
+        if ($githubToken) {
+            $headers[] = 'Authorization: token ' . $githubToken;
+        }
 
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
-                'header' => [
-                    'User-Agent: valksor-binary-manager',
-                    'Accept: application/vnd.github+json',
-                ],
+                'header' => $headers,
                 'timeout' => 15,
+                'ignore_errors' => true, // Allow us to read response headers even on errors
             ],
         ]);
 
         $response = @file_get_contents($apiUrl, false, $context);
 
+        // Check HTTP response code
+        if (isset($http_response_header)) {
+            $statusCode = $this->extractHttpStatusCode($http_response_header);
+
+            if (403 === $statusCode) {
+                $rateLimitInfo = $this->parseRateLimitHeaders($http_response_header);
+
+                if (0 === $rateLimitInfo['remaining']) {
+                    $resetTime = $rateLimitInfo['reset'] ? date('Y-m-d H:i:s', $rateLimitInfo['reset']) : 'unknown';
+                    $message = sprintf(
+                        'GitHub API rate limit exceeded for %s. Reset time: %s. ' .
+                        'To increase rate limit, set valksor.build.github_token parameter or GITHUB_TOKEN environment variable.',
+                        $this->toolConfig['name'],
+                        $resetTime,
+                    );
+
+                    throw new RuntimeException($message);
+                }
+
+                throw new RuntimeException(sprintf('Access forbidden to GitHub API for %s (HTTP 403).', $this->toolConfig['name']));
+            }
+
+            if (404 === $statusCode) {
+                throw new RuntimeException(sprintf('GitHub repository or releases not found for %s (HTTP 404).', $this->toolConfig['name']));
+            }
+
+            if ($statusCode >= 400) {
+                throw new RuntimeException(sprintf('GitHub API returned HTTP %d for %s.', $statusCode, $this->toolConfig['name']));
+            }
+        }
+
         if (false === $response) {
-            throw new RuntimeException(sprintf('Failed to fetch latest release for %s from GitHub API.', $this->toolConfig['name']));
+            $errorMsg = sprintf('Failed to fetch latest release for %s from GitHub API', $this->toolConfig['name']);
+
+            if ($attempt > 1) {
+                $errorMsg .= sprintf(' (attempt %d/%d)', $attempt, 3);
+            }
+
+            throw new RuntimeException($errorMsg . '.');
         }
 
         try {
@@ -596,6 +689,29 @@ final class BinaryAssetManager
         return $repo['default_branch'];
     }
 
+    /**
+     * Get GitHub token from parameter bag or environment variable.
+     */
+    private function getGitHubToken(): ?string
+    {
+        // Try parameter bag first
+        if ($this->parameterBag && $this->parameterBag->has('valksor.build.github_token')) {
+            return $this->parameterBag->get('valksor.build.github_token');
+        }
+
+        // Fallback to environment variable
+        return $_ENV['GITHUB_TOKEN'] ?? $_SERVER['GITHUB_TOKEN'] ?? null;
+    }
+
+    /**
+     * Check if an error message indicates a rate limit issue.
+     */
+    private function isRateLimitError(
+        string $message,
+    ): bool {
+        return str_contains($message, 'rate limit') || str_contains($message, 'Rate limit');
+    }
+
     private function log(
         ?callable $logger,
         string $message,
@@ -603,6 +719,31 @@ final class BinaryAssetManager
         if (null !== $logger) {
             $logger($message);
         }
+    }
+
+    /**
+     * Parse rate limit information from response headers.
+     */
+    private function parseRateLimitHeaders(
+        array $headers,
+    ): array {
+        $rateLimitInfo = [
+            'limit' => null,
+            'remaining' => null,
+            'reset' => null,
+        ];
+
+        foreach ($headers as $header) {
+            if (str_starts_with($header, 'X-RateLimit-Limit:')) {
+                $rateLimitInfo['limit'] = (int) trim(substr($header, 19));
+            } elseif (str_starts_with($header, 'X-RateLimit-Remaining:')) {
+                $rateLimitInfo['remaining'] = (int) trim(substr($header, 23));
+            } elseif (str_starts_with($header, 'X-RateLimit-Reset:')) {
+                $rateLimitInfo['reset'] = (int) trim(substr($header, 19));
+            }
+        }
+
+        return $rateLimitInfo;
     }
 
     private function readCurrentTag(

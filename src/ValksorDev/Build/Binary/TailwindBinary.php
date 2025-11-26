@@ -12,18 +12,25 @@
 
 namespace ValksorDev\Build\Binary;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 use function sprintf;
 
 /**
  * Provider for Tailwind CSS binary.
  */
-final class TailwindBinary implements BinaryInterface
+final readonly class TailwindBinary implements BinaryInterface
 {
+    public function __construct(
+        private ?ParameterBagInterface $parameterBag = null,
+    ) {
+    }
+
     public function createManager(
         string $varDir,
         ?string $requestedName = null,
     ): BinaryAssetManager {
-        return self::createForTailwindCss($varDir . '/tailwindcss');
+        return self::createForTailwindCss($varDir . '/tailwindcss', $this->parameterBag);
     }
 
     public function getName(): string
@@ -33,6 +40,7 @@ final class TailwindBinary implements BinaryInterface
 
     private static function createForTailwindCss(
         string $targetDir,
+        ?ParameterBagInterface $parameterBag = null,
     ): BinaryAssetManager {
         $platform ??= BinaryAssetManager::detectPlatform();
 
@@ -48,6 +56,6 @@ final class TailwindBinary implements BinaryInterface
                 ],
             ],
             'target_dir' => $targetDir,
-        ]);
+        ], $parameterBag);
     }
 }

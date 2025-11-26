@@ -26,15 +26,15 @@ interface BinaryInterface
     /**
      * Create a configured BinaryAssetManager for this tool.
      *
-     * @param string $varDir        The base var directory (e.g., /path/to/project/var)
-     * @param string $requestedName The actual binary name requested (e.g., '@valksor/valksor@next')
+     * @param string      $varDir        The base var directory (e.g., /path/to/project/var)
+     * @param string|null $requestedName The actual binary name requested (e.g., '@valksor/valksor@next')
      *
-     * @return BinaryAssetManager Configured manager ready to download/ensure the binary
+     * @return BinaryAssetManager|null Configured manager ready to download/ensure the binary, or null if no packages configured
      */
     public function createManager(
         string $varDir,
         ?string $requestedName = null,
-    ): BinaryAssetManager;
+    ): ?BinaryAssetManager;
 
     /**
      * Get the unique name/identifier for this binary tool.

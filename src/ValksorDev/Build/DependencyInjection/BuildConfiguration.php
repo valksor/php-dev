@@ -33,6 +33,12 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                     ->{$enableIfStandalone(sprintf('%s/%s', ValksorBundle::VALKSOR, $component), self::class)}()
                     ->addDefaultsIfNotSet()
                     ->children()
+                        // GitHub token for API rate limits
+                        ->scalarNode('github_token')
+                            ->info('GitHub personal access token for increased API rate limits (optional)')
+                            ->example('ghp_xxxxxxxxxxxx')
+                            ->defaultNull()
+                        ->end()
                         // Service registry with extensible flag system
                         ->arrayNode('services')
                             ->info('Valksor Build System Services Configuration')
@@ -181,6 +187,7 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                 'options' => [
                     'required' => [],
                     'cache_duration' => 3600,
+                    'generic_npm_packages' => '',
                 ],
             ],
             'icons' => [

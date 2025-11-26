@@ -26,6 +26,8 @@ use function sprintf;
  */
 final class BinaryRegistry
 {
+    private ?BinaryInterface $genericNpmProvider;
+
     /** @var array<string, BinaryInterface> */
     private array $providers = [];
 
@@ -38,6 +40,8 @@ final class BinaryRegistry
         )]
         iterable $providers,
     ) {
+        $this->genericNpmProvider = null; // Initialize typed property
+
         foreach ($providers as $provider) {
             $this->register($provider);
         }
@@ -69,6 +73,11 @@ final class BinaryRegistry
             return $this->providers['@valksor/valksor'];
         }
 
+        // Check if GenericNpmBinaryProvider handles this package
+        if ($this->genericNpmProvider && method_exists($this->genericNpmProvider, 'hasPackage') && $this->genericNpmProvider->hasPackage($name)) {
+            return $this->genericNpmProvider;
+        }
+
         throw new RuntimeException(sprintf('No binary provider registered for: %s', $name));
     }
 
@@ -80,6 +89,14 @@ final class BinaryRegistry
     public function getAvailableNames(): array
     {
         return array_keys($this->providers);
+    }
+
+    /**
+     * Get the GenericNpmBinaryProvider if registered.
+     */
+    public function getGenericNpmProvider(): ?BinaryInterface
+    {
+        return $this->genericNpmProvider;
     }
 
     /**
@@ -102,6 +119,11 @@ final class BinaryRegistry
             return isset($this->providers['@valksor/valksor']);
         }
 
+        // Check if GenericNpmBinaryProvider handles this package
+        if ($this->genericNpmProvider && method_exists($this->genericNpmProvider, 'hasPackage') && $this->genericNpmProvider->hasPackage($name)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -114,5 +136,10 @@ final class BinaryRegistry
         BinaryInterface $provider,
     ): void {
         $this->providers[$provider->getName()] = $provider;
+
+        // Store reference to GenericNpmBinaryProvider for package lookup
+        if ($provider instanceof GenericNpmBinaryProvider) {
+            $this->genericNpmProvider = $provider;
+        }
     }
 }

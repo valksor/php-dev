@@ -51,7 +51,7 @@ final class BinaryInstallCommand extends AbstractCommand
 
         // Get required binaries from services configuration
         $binaryService = $this->servicesConfig['binaries'] ?? [];
-        $requiredBinaries = $binaryService['options']['required'] ?? ['tailwindcss', 'esbuild', 'daisyui', 'lucide'];
+        $requiredBinaries = $binaryService['options']['required'];
 
         if (empty($requiredBinaries)) {
             $io->warning('No binaries required in configuration.');
@@ -75,11 +75,39 @@ final class BinaryInstallCommand extends AbstractCommand
             }
 
             try {
-                $tag = $this->binaryRegistry->get($binary)->createManager($varDir, $binary)->ensureLatest([$io, 'text']);
+                $tag = $this->binaryRegistry->get($binary)->createManager($varDir, $binary)?->ensureLatest([$io, 'text']);
                 $io->success(sprintf('✓ %s installed (%s)', $binary, $tag));
                 $successCount++;
             } catch (Exception $e) {
                 $io->error(sprintf('Failed to install %s: %s', $binary, $e->getMessage()));
+            }
+        }
+
+        // Check for and install Generic NPM packages
+        $genericProvider = $this->binaryRegistry->getGenericNpmProvider();
+
+        if ($genericProvider && $genericProvider->getPackageCount() > 0) {
+            $io->section('Installing Generic NPM Packages');
+
+            try {
+                $packageNames = $genericProvider->getPackages();
+                $versions = $genericProvider->ensureAll([$io, 'text']);
+
+                foreach ($packageNames as $i => $packageName) {
+                    $io->success(sprintf('✓ %s installed (%s)', $packageName, $versions[$i] ?? 'unknown'));
+                }
+
+                // Sync packages to public/vendor
+                $io->section('Syncing Packages to public/vendor');
+
+                foreach ($genericProvider->syncToPublicVendor([$io, 'text']) as $packageName) {
+                    $io->success(sprintf('✓ %s synced to public/vendor', $packageName));
+                }
+
+                $successCount += count($packageNames);
+                $totalCount += count($packageNames);
+            } catch (Exception $e) {
+                $io->error(sprintf('Failed to install Generic NPM packages: %s', $e->getMessage()));
             }
         }
 
