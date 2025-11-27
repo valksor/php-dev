@@ -12,19 +12,21 @@
 
 namespace ValksorDev\Build\Tests;
 
+use JsonException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use ValksorDev\Build\Binary\BinaryAssetManager;
-use ValksorDev\Build\Binary\BinaryInterface;
 use ValksorDev\Build\Binary\GenericNpmBinaryProvider;
 
 use function array_diff;
 use function file_put_contents;
+use function in_array;
 use function is_dir;
 use function json_encode;
 use function mkdir;
 use function scandir;
+use function strlen;
 use function sys_get_temp_dir;
 use function tempnam;
 use function time;
@@ -66,6 +68,9 @@ final class GenericNpmBinaryProviderTest extends TestCase
         self::assertInstanceOf(BinaryAssetManager::class, $manager);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testEnsureAll(): void
     {
         $provider = new GenericNpmBinaryProvider(
@@ -78,16 +83,6 @@ final class GenericNpmBinaryProviderTest extends TestCase
         self::assertCount(2, $versions);
         // Should return the fake versions we created in setUp
         self::assertSame(['1.0.0', '2.0.0'], $versions);
-    }
-
-    public function testImplementsBinaryInterface(): void
-    {
-        $provider = new GenericNpmBinaryProvider(
-            $this->parameterBag,
-            '@valksor/valksor',
-        );
-
-        self::assertInstanceOf(BinaryInterface::class, $provider);
     }
 
     public function testMultiplePackages(): void
@@ -154,8 +149,14 @@ final class GenericNpmBinaryProviderTest extends TestCase
         ], $provider->getPackages());
     }
 
+    /**
+     * @throws JsonException
+     */
     protected function setUp(): void
     {
+        // Set up HTTP mock first to intercept any requests
+        $this->setUpHttpMock();
+
         // Create a temporary directory for tests
         $this->tempDir = tempnam(sys_get_temp_dir(), 'generic_npm_test_');
         unlink($this->tempDir); // Remove file so we can create directory
@@ -174,18 +175,24 @@ final class GenericNpmBinaryProviderTest extends TestCase
 
     protected function tearDown(): void
     {
+        // Restore original protocol handlers
+        $this->tearDownHttpMock();
+
         // Cleanup temporary directory
         if (is_dir($this->tempDir)) {
             $this->removeDirectory($this->tempDir);
         }
     }
 
+    /**
+     * @throws JsonException
+     */
     private function createFakePackage(
         string $package,
         string $version,
     ): void {
         // Convert package name to directory name using the same logic as getPackageDir
-        $packageDirName = str_replace('@', '', str_replace('/', '-', $package));
+        $packageDirName = str_replace(['/', '@'], ['-', ''], $package);
         $packageDir = $this->tempDir . '/var/' . $packageDirName;
         mkdir($packageDir, 0o755, true);
 
@@ -193,13 +200,13 @@ final class GenericNpmBinaryProviderTest extends TestCase
         file_put_contents($packageDir . '/version.json', json_encode([
             'version' => $version,
             'timestamp' => time(),
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
         // Create fake package.json
         file_put_contents($packageDir . '/package.json', json_encode([
             'name' => $package,
             'version' => $version,
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
         // Also create the directory structure that createManager tests expect
         $testDir = $this->tempDir . '/var/test/' . $packageDirName;
@@ -207,11 +214,11 @@ final class GenericNpmBinaryProviderTest extends TestCase
         file_put_contents($testDir . '/version.json', json_encode([
             'version' => $version,
             'timestamp' => time(),
-        ]));
+        ], JSON_THROW_ON_ERROR));
         file_put_contents($testDir . '/package.json', json_encode([
             'name' => $package,
             'version' => $version,
-        ]));
+        ], JSON_THROW_ON_ERROR));
     }
 
     private function removeDirectory(
@@ -221,9 +228,7 @@ final class GenericNpmBinaryProviderTest extends TestCase
             return;
         }
 
-        $files = array_diff(scandir($dir), ['.', '..']);
-
-        foreach ($files as $file) {
+        foreach (array_diff(scandir($dir), ['.', '..']) as $file) {
             $path = $dir . '/' . $file;
 
             if (is_dir($path)) {
@@ -233,5 +238,111 @@ final class GenericNpmBinaryProviderTest extends TestCase
             }
         }
         rmdir($dir);
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function setUpHttpMock(): void
+    {
+        // Configure mock responses for npm registry
+        MockHttpStreamWrapper::setMockResponses([
+            'https://registry.npmjs.org/@valksor/valksor/latest' => json_encode([
+                'version' => '1.0.0',
+                'name' => '@valksor/valksor',
+            ], JSON_THROW_ON_ERROR),
+            'https://registry.npmjs.org/@valksor/ui/latest' => json_encode([
+                'version' => '2.0.0',
+                'name' => '@valksor/ui',
+            ], JSON_THROW_ON_ERROR),
+            'https://registry.npmjs.org/@valksor/icons/latest' => json_encode([
+                'version' => '3.0.0',
+                'name' => '@valksor/icons',
+            ], JSON_THROW_ON_ERROR),
+            'https://registry.npmjs.org/some/package/latest' => json_encode([
+                'version' => '4.0.0',
+                'name' => 'some/package',
+            ], JSON_THROW_ON_ERROR),
+        ]);
+
+        // Register mock stream wrapper
+        if (in_array('https', stream_get_wrappers(), true)) {
+            stream_wrapper_unregister('https');
+        }
+        stream_wrapper_register('https', MockHttpStreamWrapper::class);
+    }
+
+    private function tearDownHttpMock(): void
+    {
+        // Restore original https wrapper
+        if (in_array('https', stream_get_wrappers(), true)) {
+            stream_wrapper_unregister('https');
+        }
+        stream_wrapper_restore('https');
+    }
+}
+
+/**
+ * Mock stream wrapper to intercept HTTP requests to npm registry during testing.
+ */
+class MockHttpStreamWrapper
+{
+    private string $data = '';
+
+    private string $url = '';
+
+    /** @var array<string, string> */
+    private static array $mockResponses = [];
+
+    public function stream_eof(): bool
+    {
+        return '' === $this->data;
+    }
+
+    public function stream_open(
+        string $path,
+    ): bool {
+        $this->url = $path;
+
+        // Return mock response if available, otherwise empty string
+        $this->data = self::$mockResponses[$path] ?? '';
+
+        return true;
+    }
+
+    public function stream_read(
+        int $count,
+    ): string {
+        $result = substr($this->data, 0, $count);
+        $this->data = substr($this->data, $count);
+
+        return $result;
+    }
+
+    public function stream_stat(): array
+    {
+        return [
+            'mode' => 0,
+            'size' => strlen(self::$mockResponses[$this->url] ?? ''),
+        ];
+    }
+
+    public function url_stat(
+        string $path,
+    ): array|false {
+        if (isset(self::$mockResponses[$path])) {
+            return [
+                'mode' => 0,
+                'size' => strlen(self::$mockResponses[$path]),
+            ];
+        }
+
+        return false;
+    }
+
+    public static function setMockResponses(
+        array $responses,
+    ): void {
+        self::$mockResponses = $responses;
     }
 }

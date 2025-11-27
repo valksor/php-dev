@@ -16,7 +16,9 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
 use function array_keys;
+use function method_exists;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * Registry for binary providers.

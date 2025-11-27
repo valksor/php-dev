@@ -32,6 +32,7 @@ use function is_writable;
 use function json_encode;
 use function ltrim;
 use function max;
+use function memory_get_usage;
 use function microtime;
 use function opendir;
 use function pathinfo;
@@ -39,6 +40,7 @@ use function preg_match;
 use function preg_quote;
 use function readdir;
 use function sprintf;
+use function str_contains;
 use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
@@ -47,6 +49,7 @@ use function strtolower;
 use function usleep;
 
 use const DIRECTORY_SEPARATOR;
+use const JSON_THROW_ON_ERROR;
 use const PATHINFO_EXTENSION;
 
 /**
@@ -262,7 +265,6 @@ final class HotReloadService extends AbstractService
         string $pattern,
         array &$dirs,
         array &$globs,
-        array &$filenames,
         array &$extensions,
     ): void {
         // Glob patterns (contain wildcards)
@@ -340,7 +342,7 @@ final class HotReloadService extends AbstractService
         $customExtensions = [];
 
         foreach ($excludePatterns as $pattern) {
-            $this->categorizeExcludePattern($pattern, $customDirs, $customGlobs, $customFilenames, $customExtensions);
+            $this->categorizeExcludePattern($pattern, $customDirs, $customGlobs, $customExtensions);
         }
 
         // Merge with defaults

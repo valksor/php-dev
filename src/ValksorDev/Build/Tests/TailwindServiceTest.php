@@ -37,11 +37,11 @@ final class TailwindServiceTest extends TestCase
     public function testBuildFailure(): void
     {
         // Create required directory structure
-        mkdir($this->tempDir . '/var/tailwindcss', 0o755, true);
+        mkdir($this->tempDir . '/var/tailwindlabs-tailwindcss', 0o755, true);
         mkdir($this->tempDir . '/apps/test-app/assets/styles', 0o755, true);
 
         // Create a failing tailwindcss binary
-        $tailwindBinary = $this->tempDir . '/var/tailwindcss/tailwindcss';
+        $tailwindBinary = $this->tempDir . '/var/tailwindlabs-tailwindcss/tailwindcss';
         file_put_contents($tailwindBinary, '#!/bin/bash' . PHP_EOL . 'exit 1');
         chmod($tailwindBinary, 0o755);
 

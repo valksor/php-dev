@@ -50,7 +50,7 @@ use const DIRECTORY_SEPARATOR;
 use const GLOB_NOSORT;
 use const JSON_THROW_ON_ERROR;
 
-#[AsCommand(name: 'valksor:icons', description: 'Generate Twig SVG icons using Lucide and local overrides.')]
+#[AsCommand(name: 'valksor:icons', description: 'Generate Twig SVG icons using Lucide icons only.')]
 final class IconsGenerateCommand extends AbstractCommand
 {
     private string $cacheRoot;
@@ -100,17 +100,12 @@ final class IconsGenerateCommand extends AbstractCommand
             return $this->handleCommandSuccess();
         }
 
-        $localIconsDir = $projectRoot . '/project/js/icons';
-        $sharedIconsDir = $this->getInfrastructureDir() . '/assets/icons';
-
         $generated = 0;
 
         foreach ($targets as $targetId => $iconNames) {
             $generated += $this->generateForTarget(
                 $targetId,
                 $iconNames,
-                $localIconsDir,
-                $sharedIconsDir,
                 $lucideDir,
             );
         }
@@ -326,7 +321,7 @@ final class IconsGenerateCommand extends AbstractCommand
             return $targets;
         }
 
-        if (isset($appIcons[$target]) || [] === $appIcons[$target]) {
+        if (!isset($appIcons[$target]) || [] === $appIcons[$target]) {
             $this->io->warning(sprintf('No icons.json found for app "%s" or no icons defined.', $target));
 
             return [];
@@ -414,8 +409,6 @@ final class IconsGenerateCommand extends AbstractCommand
     private function generateForTarget(
         string $target,
         array $icons,
-        string $localIconsDir,
-        string $sharedIconsDir,
         ?string $lucideIconDir,
     ): int {
         $icons = array_map('strval', $icons);
@@ -444,10 +437,10 @@ final class IconsGenerateCommand extends AbstractCommand
         $generated = 0;
 
         foreach ($icons as $icon) {
-            $source = $this->locateIconSource($icon, $localIconsDir, $sharedIconsDir, $lucideIconDir);
+            $source = $this->locateIconSource($icon, $lucideIconDir);
 
             if (null === $source) {
-                $this->io->warning(sprintf('[%s] Icon "%s" not found in local, shared, or lucide sources.', $target, $icon));
+                $this->io->warning(sprintf('[%s] Icon "%s" not found in lucide sources.', $target, $icon));
 
                 continue;
             }
@@ -479,20 +472,15 @@ final class IconsGenerateCommand extends AbstractCommand
 
     private function locateIconSource(
         string $icon,
-        string $localDir,
-        string $sharedDir,
         ?string $lucideDir,
     ): ?string {
-        $candidates = [
-            $localDir . '/' . $icon . '.svg',
-            $sharedDir . '/' . $icon . '.svg',
-        ];
-
-        if (null !== $lucideDir && is_dir($lucideDir)) {
-            $candidates[] = rtrim($lucideDir, '/') . '/' . $icon . '.svg';
+        if (null === $lucideDir || !is_dir($lucideDir)) {
+            return null;
         }
 
-        return array_find($candidates, static fn ($candidate) => is_file($candidate));
+        $iconPath = rtrim($lucideDir, '/') . '/' . $icon . '.svg';
+
+        return is_file($iconPath) ? $iconPath : null;
     }
 
     private function locateIconsDirectory(
@@ -573,19 +561,11 @@ final class IconsGenerateCommand extends AbstractCommand
             $inner .= $document->saveXML($child);
         }
 
-        if ('logo' === $icon) {
-            $wrapped = sprintf(
-                '{# twig-cs-fixer-disable #}<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" fill="currentColor">%s</svg>',
-                $viewBox,
-                $inner,
-            );
-        } else {
-            $wrapped = sprintf(
-                '{# twig-cs-fixer-disable #}<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">%s</svg>',
-                $viewBox,
-                $inner,
-            );
-        }
+        $wrapped = sprintf(
+            '{# twig-cs-fixer-disable #}<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">%s</svg>',
+            $viewBox,
+            $inner,
+        );
 
         $outputPath = $destinationDir . '/' . $icon . '.svg.twig';
         file_put_contents($outputPath, $wrapped);

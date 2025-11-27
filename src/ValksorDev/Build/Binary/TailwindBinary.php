@@ -30,7 +30,7 @@ final readonly class TailwindBinary implements BinaryInterface
         string $varDir,
         ?string $requestedName = null,
     ): BinaryAssetManager {
-        return self::createForTailwindCss($varDir . '/tailwindcss', $this->parameterBag);
+        return self::createForTailwindCss($varDir . '/tailwindlabs-tailwindcss', $this->parameterBag);
     }
 
     public function getName(): string

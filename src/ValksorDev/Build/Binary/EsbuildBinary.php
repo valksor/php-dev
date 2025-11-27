@@ -13,7 +13,7 @@
 namespace ValksorDev\Build\Binary;
 
 /**
- * Provider for esbuild binary.
+ * Provider for esbuild binary using official download script.
  */
 final class EsbuildBinary implements BinaryInterface
 {
@@ -32,10 +32,20 @@ final class EsbuildBinary implements BinaryInterface
     public static function createForEsbuild(
         string $targetDir,
     ): BinaryAssetManager {
+        $platform = BinaryAssetManager::detectPlatform();
+        $packageMap = [
+            'linux-x64' => '@esbuild/linux-x64',
+            'linux-arm64' => '@esbuild/linux-arm64',
+            'darwin-x64' => '@esbuild/darwin-x64',
+            'darwin-arm64' => '@esbuild/darwin-arm64',
+        ];
+
+        $npmPackage = $packageMap[$platform] ?? '@esbuild/linux-x64';
+
         return new BinaryAssetManager([
             'name' => 'esbuild',
             'source' => 'npm',
-            'npm_package' => 'esbuild',
+            'npm_package' => $npmPackage,
             'assets' => [
                 [
                     'pattern' => 'esbuild',

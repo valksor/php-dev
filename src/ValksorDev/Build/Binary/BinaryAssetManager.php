@@ -21,8 +21,10 @@ use ZipArchive;
 
 use function array_key_exists;
 use function chmod;
+use function date;
 use function escapeshellarg;
 use function exec;
+use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function implode;
@@ -37,9 +39,12 @@ use function rename;
 use function sleep;
 use function sprintf;
 use function str_contains;
+use function str_starts_with;
 use function stream_context_create;
 use function strpos;
+use function substr;
 use function sys_get_temp_dir;
+use function trim;
 use function uniqid;
 use function unlink;
 
@@ -97,7 +102,7 @@ final class BinaryAssetManager
         $currentTag = $this->readCurrentTag($targetDir);
         $assetsPresent = $this->assetsPresent($targetDir);
 
-        if (null !== $currentTag && $assetsPresent && $currentTag === $latest['tag']) {
+        if (null !== $currentTag && $assetsPresent && $currentTag === $latest['version']) {
             $this->log($logger, sprintf('%s assets already current (%s).', $this->toolConfig['name'], $currentTag));
 
             return $currentTag;
@@ -215,8 +220,8 @@ final class BinaryAssetManager
             throw new RuntimeException(sprintf('Failed to write %s asset to %s', $this->toolConfig['name'], $targetPath));
         }
 
-        if ($assetConfig['executable']) {
-            @chmod($targetPath, 0o755);
+        if ($assetConfig['executable'] && !chmod($targetPath, 0o755)) {
+            throw new RuntimeException(sprintf('Failed to set executable permissions on %s', $targetPath));
         }
     }
 
@@ -359,8 +364,8 @@ final class BinaryAssetManager
                 }
             }
 
-            if ($assetConfig['executable']) {
-                @chmod($targetPath, 0o755);
+            if ($assetConfig['executable'] && !chmod($targetPath, 0o755)) {
+                throw new RuntimeException(sprintf('Failed to set executable permissions on %s', $targetPath));
             }
         } finally {
             exec(sprintf('rm -rf %s 2>&1', escapeshellarg($tmpDir)));
@@ -558,7 +563,7 @@ final class BinaryAssetManager
                     $resetTime = $rateLimitInfo['reset'] ? date('Y-m-d H:i:s', $rateLimitInfo['reset']) : 'unknown';
                     $message = sprintf(
                         'GitHub API rate limit exceeded for %s. Reset time: %s. ' .
-                        'To increase rate limit, set valksor.build.github_token parameter or GITHUB_TOKEN environment variable.',
+                        'To increase rate limit, set valksor.build.github_token parameter',
                         $this->toolConfig['name'],
                         $resetTime,
                     );
@@ -700,7 +705,7 @@ final class BinaryAssetManager
         }
 
         // Fallback to environment variable
-        return $_ENV['GITHUB_TOKEN'] ?? $_SERVER['GITHUB_TOKEN'] ?? null;
+        return null;
     }
 
     /**

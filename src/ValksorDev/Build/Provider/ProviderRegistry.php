@@ -15,7 +15,9 @@ namespace ValksorDev\Build\Provider;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
+use function array_keys;
 use function sprintf;
+use function uasort;
 
 /**
  * Registry for dev service providers with dependency resolution.

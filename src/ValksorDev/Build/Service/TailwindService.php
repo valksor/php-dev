@@ -424,7 +424,7 @@ final class TailwindService extends AbstractService
     private function resolveTailwindExecutable(): string
     {
         // Use project-local Tailwind binary downloaded via valksor:binary command
-        $tailwindBinary = $this->parameterBag->get('kernel.project_dir') . '/var/tailwindcss/tailwindcss';
+        $tailwindBinary = $this->parameterBag->get('kernel.project_dir') . '/var/tailwindlabs-tailwindcss/tailwindcss';
 
         if (!is_file($tailwindBinary) || !is_executable($tailwindBinary)) {
             throw new RuntimeException('Tailwind executable not found at ' . $tailwindBinary . '. Run "bin/console valksor:binary tailwindcss" to download it.');

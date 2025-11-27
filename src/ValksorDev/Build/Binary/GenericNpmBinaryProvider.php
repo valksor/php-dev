@@ -12,6 +12,7 @@
 
 namespace ValksorDev\Build\Binary;
 
+use Exception;
 use FilesystemIterator;
 use JsonException;
 use RecursiveDirectoryIterator;
@@ -19,18 +20,30 @@ use RecursiveIteratorIterator;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+use function array_any;
+use function array_key_exists;
 use function array_map;
+use function copy;
 use function count;
+use function end;
 use function explode;
 use function file_exists;
+use function file_get_contents;
 use function is_dir;
+use function is_file;
 use function is_readable;
 use function json_decode;
 use function mkdir;
 use function sprintf;
 use function str_contains;
 use function str_replace;
+use function stream_context_create;
+use function strpos;
+use function strrpos;
+use function substr;
 use function trim;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Generic provider for multiple npm packages from a comma-separated list.
@@ -38,7 +51,7 @@ use function trim;
  * Usage: new GenericNpmBinaryProvider('@valksor/valksor,@valksor/ui,@valksor/icons')
  */
 #[AutoconfigureTag('valksor.binary_provider')]
-final readonly class GenericNpmBinaryProvider implements BinaryInterface
+readonly class GenericNpmBinaryProvider implements BinaryInterface
 {
     /** @var array<int,array{package:string,tag:string}> */
     private array $packages;
@@ -111,7 +124,7 @@ final readonly class GenericNpmBinaryProvider implements BinaryInterface
             $targetDir = $this->getTargetDirectory($package);
 
             // Check if package is already up-to-date before creating manager
-            if ($this->isPackageUpToDate($targetDir)) {
+            if ($this->isPackageUpToDate($targetDir, $package, $tag)) {
                 // Read existing version to return
                 $versionFile = $targetDir . '/version.json';
                 $versionData = json_decode(file_get_contents($versionFile), true, 512, JSON_THROW_ON_ERROR);
@@ -164,7 +177,7 @@ final readonly class GenericNpmBinaryProvider implements BinaryInterface
     public function hasPackage(
         string $packageName,
     ): bool {
-        return array_any($this->packages, fn ($pkg) => $pkg['package'] === $packageName);
+        return array_any($this->packages, static fn ($pkg) => $pkg['package'] === $packageName);
     }
 
     /**
@@ -204,6 +217,72 @@ final readonly class GenericNpmBinaryProvider implements BinaryInterface
         }
 
         return $syncedPackages;
+    }
+
+    /**
+     * Check if a package is already up-to-date in the target directory.
+     *
+     * @throws JsonException
+     */
+    protected function isPackageUpToDate(
+        string $targetDir,
+        string $package,
+        string $tag = 'latest',
+    ): bool {
+        // Check if target directory exists
+        if (!is_dir($targetDir)) {
+            return false;
+        }
+
+        // Check if version.json exists and is readable
+        $versionFile = $targetDir . '/version.json';
+
+        if (!is_file($versionFile) || !is_readable($versionFile)) {
+            return false;
+        }
+
+        // Read and validate version.json
+        $versionData = json_decode(file_get_contents($versionFile), true, 512, JSON_THROW_ON_ERROR);
+
+        if (!$versionData || !isset($versionData['version'])) {
+            return false;
+        }
+
+        // Check if basic assets are present (avoid empty directories)
+        if (!$this->hasValidAssets($targetDir)) {
+            return false;
+        }
+
+        // Compare with latest version from NPM registry
+        try {
+            $packageUrl = sprintf('https://registry.npmjs.org/%s/%s', $package, $tag);
+
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'header' => 'User-Agent: valksor-binary-manager',
+                    'timeout' => 15,
+                ],
+            ]);
+
+            $response = @file_get_contents($packageUrl, false, $context);
+
+            if (false === $response) {
+                return false; // Assume need update if we can't check
+            }
+
+            $data = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+
+            if (!array_key_exists('version', $data)) {
+                return false; // Assume need update if response is invalid
+            }
+
+            // Compare local version with NPM registry version
+            return $versionData['version'] === $data['version'];
+        } catch (Exception) {
+            // If we can't check the registry, assume we need to update
+            return false;
+        }
     }
 
     /**
@@ -279,37 +358,6 @@ final readonly class GenericNpmBinaryProvider implements BinaryInterface
         $versionJson = $targetDir . '/version.json';
 
         return file_exists($packageJson) && file_exists($versionJson);
-    }
-
-    /**
-     * Check if a package is already up-to-date in the target directory.
-     *
-     * @throws JsonException
-     */
-    private function isPackageUpToDate(
-        string $targetDir,
-    ): bool {
-        // Check if target directory exists
-        if (!is_dir($targetDir)) {
-            return false;
-        }
-
-        // Check if version.json exists and is readable
-        $versionFile = $targetDir . '/version.json';
-
-        if (!is_file($versionFile) || !is_readable($versionFile)) {
-            return false;
-        }
-
-        // Read and validate version.json
-        $versionData = json_decode(file_get_contents($versionFile), true, 512, JSON_THROW_ON_ERROR);
-
-        if (!$versionData || !isset($versionData['version'])) {
-            return false;
-        }
-
-        // Check if basic assets are present (avoid empty directories)
-        return $this->hasValidAssets($targetDir);
     }
 
     /**

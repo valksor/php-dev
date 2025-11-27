@@ -20,13 +20,21 @@ use Symfony\Component\Process\Process;
 use ValksorDev\Build\Util\ConsoleCommandBuilder;
 
 use function array_filter;
+use function array_merge;
+use function array_shift;
 use function array_slice;
 use function count;
+use function date;
+use function explode;
 use function function_exists;
+use function implode;
+use function min;
 use function pcntl_async_signals;
 use function pcntl_signal;
 use function sprintf;
+use function strtoupper;
 use function time;
+use function trim;
 use function ucfirst;
 use function usleep;
 
@@ -470,13 +478,7 @@ final class ProcessManager
      */
     public function hasFailedProcesses(): bool
     {
-        foreach ($this->processes as $process) {
-            if (!$process->isRunning() && !$process->isSuccessful()) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->processes, static fn ($process) => !$process->isRunning() && !$process->isSuccessful());
     }
 
     /**

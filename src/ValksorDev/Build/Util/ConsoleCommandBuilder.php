@@ -15,6 +15,7 @@ namespace ValksorDev\Build\Util;
 use Symfony\Component\Process\Process;
 
 use function is_string;
+use function str_starts_with;
 
 /**
  * Utility class for building console commands with standardized options.
@@ -24,8 +25,8 @@ use function is_string;
  */
 final class ConsoleCommandBuilder
 {
-    public const CONSOLE_COMMAND = 'bin/console';
-    public const PHP_CONSOLE = 'php';
+    public const string CONSOLE_COMMAND = 'bin/console';
+    public const string PHP_CONSOLE = 'php';
 
     /**
      * Build a console command process with options or arguments.

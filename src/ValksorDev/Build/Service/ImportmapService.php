@@ -13,8 +13,10 @@
 namespace ValksorDev\Build\Service;
 
 use FilesystemIterator;
+use JsonException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -22,6 +24,7 @@ use Symfony\Component\Process\Process;
 use Valksor\Bundle\Service\PathFilter;
 use Valksor\Component\Sse\Service\AbstractService;
 use Valksor\FullStack;
+use ValksorDev\Build\Binary\EsbuildBinary;
 
 use function array_key_exists;
 use function array_keys;
@@ -81,6 +84,8 @@ final class ImportmapService extends AbstractService
 
     /**
      * @param array<string,mixed> $config Configuration: ['watch' => bool, 'minify' => bool, 'esbuild' => ?string]
+     *
+     * @throws JsonException
      */
     public function start(
         array $config = [],
@@ -313,6 +318,9 @@ final class ImportmapService extends AbstractService
         }
     }
 
+    /**
+     * @throws JsonException
+     */
     private function resolveEsbuildExecutable(
         bool $minify,
     ): ?string {
@@ -320,8 +328,15 @@ final class ImportmapService extends AbstractService
             return null; // No minification needed, use simple copy
         }
 
-        // Use project-local esbuild binary downloaded via valksor:binary command
-        return $this->parameterBag->get('kernel.project_dir') . '/var/esbuild/esbuild';
+        // Ensure esbuild binary is available
+        $esbuildPath = $this->parameterBag->get('kernel.project_dir') . '/var/esbuild/esbuild';
+
+        $esbuildManager = new EsbuildBinary()->createManager($this->parameterBag->get('kernel.project_dir') . '/var');
+
+        // Ensure the latest esbuild is installed
+        $esbuildManager->ensureLatest();
+
+        return $esbuildPath;
     }
 
     /**
@@ -475,6 +490,13 @@ final class ImportmapService extends AbstractService
 
         if ($minify && null !== $esbuild) {
             // Use esbuild for minification when enabled
+            if (!is_file($esbuild)) {
+                throw new RuntimeException(sprintf('esbuild binary not found: %s', $esbuild));
+            }
+
+            if (!chmod($esbuild, 0o755)) {
+                throw new RuntimeException(sprintf('Failed to set executable permissions on esbuild binary: %s', $esbuild));
+            }
             $process = new Process([
                 $esbuild,
                 $source,
