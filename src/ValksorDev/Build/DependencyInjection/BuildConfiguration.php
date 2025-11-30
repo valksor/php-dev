@@ -194,7 +194,10 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                 'enabled' => true,
                 'provider' => 'icons',
                 'flags' => ['init' => true, 'dev' => false, 'prod' => true],
-                'options' => [],
+                'options' => [
+                    'fontawesome_path' => null,
+                    'fontawesome_enabled' => true,
+                ],
             ],
             'assets' => [
                 'enabled' => true,
