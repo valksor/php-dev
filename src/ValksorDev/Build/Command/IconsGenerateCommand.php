@@ -30,7 +30,6 @@ use function array_map;
 use function array_values;
 use function closedir;
 use function count;
-use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function glob;
@@ -47,7 +46,6 @@ use function sprintf;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
-use function strpos;
 use function substr;
 use function unlink;
 
@@ -463,6 +461,27 @@ final class IconsGenerateCommand extends AbstractCommand
         return $generated;
     }
 
+    /**
+     * Get FontAwesome path from BuildConfiguration.
+     */
+    private function getFontAwesomePath(): ?string
+    {
+        $servicesConfig = $this->parameterBag->get('valksor.build.services');
+        $iconsConfig = $servicesConfig['icons']['options'] ?? [];
+        $fontawesomePath = $iconsConfig['fontawesome_path'] ?? null;
+
+        if (empty($fontawesomePath)) {
+            return null;
+        }
+
+        // If path is relative, resolve it from project root using existing pattern
+        if (!str_starts_with($fontawesomePath, '/')) {
+            return $this->resolveProjectRoot() . '/' . $fontawesomePath;
+        }
+
+        return $fontawesomePath;
+    }
+
     private function iconDirectoryLooksValid(
         string $path,
     ): bool {
@@ -473,6 +492,29 @@ final class IconsGenerateCommand extends AbstractCommand
         $files = glob($path . '/*.svg', GLOB_NOSORT);
 
         return false !== $files && [] !== $files;
+    }
+
+    /**
+     * Locate FontAwesome icon files using configured path.
+     */
+    private function locateFontAwesomeIcon(
+        array $parsed,
+    ): ?string {
+        $fontAwesomePath = $this->getFontAwesomePath();
+
+        if (empty($fontAwesomePath)) {
+            return null;
+        }
+
+        $styleDir = $fontAwesomePath . '/' . $parsed['style'];
+
+        if (!is_dir($styleDir)) {
+            return null;
+        }
+
+        $iconPath = rtrim($styleDir, '/') . '/' . $parsed['name'] . '.svg';
+
+        return is_file($iconPath) ? $iconPath : null;
     }
 
     private function locateIconSource(
@@ -496,28 +538,6 @@ final class IconsGenerateCommand extends AbstractCommand
         return is_file($iconPath) ? $iconPath : null;
     }
 
-    /**
-     * Locate FontAwesome icon files using configured path
-     */
-    private function locateFontAwesomeIcon(array $parsed): ?string
-    {
-        $fontAwesomePath = $this->getFontAwesomePath();
-
-        if (empty($fontAwesomePath)) {
-            return null;
-        }
-
-        $styleDir = $fontAwesomePath . '/' . $parsed['style'];
-
-        if (!is_dir($styleDir)) {
-            return null;
-        }
-
-        $iconPath = rtrim($styleDir, '/') . '/' . $parsed['name'] . '.svg';
-
-        return is_file($iconPath) ? $iconPath : null;
-    }
-
     private function locateIconsDirectory(
         string $baseDir,
     ): ?string {
@@ -529,6 +549,37 @@ final class IconsGenerateCommand extends AbstractCommand
         }
 
         return null;
+    }
+
+    /**
+     * Parse FontAwesome icon name format: fa-<type>-<icon>.
+     */
+    private function parseIconName(
+        string $icon,
+    ): ?array {
+        if (!str_starts_with($icon, 'fa-')) {
+            return null;
+        }
+
+        // Pattern: fa-<type>-<icon>
+        if (!preg_match('/^fa-([a-z]+)-(.+)$/', $icon, $matches)) {
+            return null;
+        }
+
+        $type = $matches[1]; // solid, regular, light, duotone, brands
+        $iconName = $matches[2]; // the actual icon name
+
+        $validTypes = ['solid', 'regular', 'light', 'duotone', 'brands'];
+
+        if (!in_array($type, $validTypes, true)) {
+            return null;
+        }
+
+        return [
+            'type' => 'fontawesome',
+            'style' => $type,
+            'name' => $iconName,
+        ];
     }
 
     private function readJsonList(
@@ -557,134 +608,8 @@ final class IconsGenerateCommand extends AbstractCommand
         return array_map('strval', $data);
     }
 
-    private function writeTwigIcon(
-        string $icon,
-        string $sourcePath,
-        string $destinationDir,
-    ): bool {
-        // Check if this is a FontAwesome icon
-        $parsed = $this->parseIconName($icon);
-
-        if (null !== $parsed && 'fontawesome' === $parsed['type']) {
-            return $this->writeFontAwesomeTwigIcon($icon, $parsed, $sourcePath, $destinationDir);
-        }
-
-        // Default Lucide processing
-        return $this->writeLucideTwigIcon($icon, $sourcePath, $destinationDir);
-    }
-
     /**
-     * Parse FontAwesome icon name format: fa-<type>-<icon>
-     */
-    private function parseIconName(string $icon): ?array
-    {
-        if (!str_starts_with($icon, 'fa-')) {
-            return null;
-        }
-
-        // Pattern: fa-<type>-<icon>
-        if (!preg_match('/^fa-([a-z]+)-(.+)$/', $icon, $matches)) {
-            return null;
-        }
-
-        $type = $matches[1]; // solid, regular, light, duotone, brands
-        $iconName = $matches[2]; // the actual icon name
-
-        $validTypes = ['solid', 'regular', 'light', 'duotone', 'brands'];
-
-        if (!in_array($type, $validTypes, true)) {
-            return null;
-        }
-
-        return [
-            'type' => 'fontawesome',
-            'style' => $type,
-            'name' => $iconName,
-        ];
-    }
-
-    /**
-     * Get FontAwesome path from BuildConfiguration
-     */
-    private function getFontAwesomePath(): ?string
-    {
-        $servicesConfig = $this->parameterBag->get('valksor.build.services');
-        $iconsConfig = $servicesConfig['icons']['options'] ?? [];
-        $fontawesomePath = $iconsConfig['fontawesome_path'] ?? null;
-
-        if (empty($fontawesomePath)) {
-            return null;
-        }
-
-        // If path is relative, resolve it from project root using existing pattern
-        if (!str_starts_with($fontawesomePath, '/')) {
-            return $this->resolveProjectRoot() . '/' . $fontawesomePath;
-        }
-
-        return $fontawesomePath;
-    }
-
-    /**
-     * Write FontAwesome icon with proper processing
-     */
-    private function writeFontAwesomeTwigIcon(
-        string $icon,
-        array $parsed,
-        string $sourcePath,
-        string $destinationDir,
-    ): bool {
-        $svg = file_get_contents($sourcePath);
-
-        if (false === $svg) {
-            $this->io->warning('Unable to read FontAwesome icon source ' . $sourcePath);
-            return false;
-        }
-
-        // Special handling for duotone icons
-        if ('duotone' === $parsed['style']) {
-            return $this->writeDuotoneTwigIcon($icon, $parsed, $svg, $destinationDir);
-        }
-
-        $document = new DOMDocument();
-        $document->preserveWhiteSpace = false;
-        $document->formatOutput = false;
-
-        if (!@$document->loadXML($svg)) {
-            $this->io->warning(sprintf('Invalid SVG for FontAwesome icon %s (%s)', $icon, $sourcePath));
-            return false;
-        }
-
-        $svgElement = $document->getElementsByTagName('svg')->item(0);
-
-        if (null === $svgElement) {
-            $this->io->warning(sprintf('SVG element missing for FontAwesome icon %s (%s)', $icon, $sourcePath));
-            return false;
-        }
-
-        $viewBox = $svgElement->getAttribute('viewBox') ?: '0 0 24 24';
-
-        $inner = '';
-
-        foreach ($svgElement->childNodes as $child) {
-            $inner .= $document->saveXML($child);
-        }
-
-        // FontAwesome icons use fill="currentColor" instead of stroke
-        $wrapped = sprintf(
-            '{# twig-cs-fixer-disable #}<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" fill="currentColor"%s>%s</svg>',
-            $viewBox,
-            'brands' === $parsed['style'] ? '' : ' stroke="currentColor" stroke-width="2"',
-            $inner,
-        );
-
-        $outputPath = $destinationDir . '/' . $icon . '.svg.twig';
-        file_put_contents($outputPath, $wrapped);
-
-        return true;
-    }
-
-    /**
-     * Write duotone icon with special CSS class handling
+     * Write duotone icon with special CSS class handling.
      */
     private function writeDuotoneTwigIcon(
         string $icon,
@@ -724,7 +649,69 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
-     * Write Lucide icon (original logic)
+     * Write FontAwesome icon with proper processing.
+     */
+    private function writeFontAwesomeTwigIcon(
+        string $icon,
+        array $parsed,
+        string $sourcePath,
+        string $destinationDir,
+    ): bool {
+        $svg = file_get_contents($sourcePath);
+
+        if (false === $svg) {
+            $this->io->warning('Unable to read FontAwesome icon source ' . $sourcePath);
+
+            return false;
+        }
+
+        // Special handling for duotone icons
+        if ('duotone' === $parsed['style']) {
+            return $this->writeDuotoneTwigIcon($icon, $parsed, $svg, $destinationDir);
+        }
+
+        $document = new DOMDocument();
+        $document->preserveWhiteSpace = false;
+        $document->formatOutput = false;
+
+        if (!@$document->loadXML($svg)) {
+            $this->io->warning(sprintf('Invalid SVG for FontAwesome icon %s (%s)', $icon, $sourcePath));
+
+            return false;
+        }
+
+        $svgElement = $document->getElementsByTagName('svg')->item(0);
+
+        if (null === $svgElement) {
+            $this->io->warning(sprintf('SVG element missing for FontAwesome icon %s (%s)', $icon, $sourcePath));
+
+            return false;
+        }
+
+        $viewBox = $svgElement->getAttribute('viewBox') ?: '0 0 24 24';
+
+        $inner = '';
+
+        foreach ($svgElement->childNodes as $child) {
+            $inner .= $document->saveXML($child);
+        }
+
+        // FontAwesome icons use fill="currentColor" instead of stroke
+        $wrapped = sprintf(
+            '{# twig-cs-fixer-disable #}<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s" fill="currentColor"%s>%s</svg>',
+            $viewBox,
+            'brands' === $parsed['style'] ? '' : ' stroke="currentColor" stroke-width="2"',
+            $inner,
+        );
+
+        $outputPath = $destinationDir . '/' . $icon . '.svg.twig';
+        file_put_contents($outputPath, $wrapped);
+
+        return true;
+    }
+
+    /**
+     * Write Lucide icon (original logic).
      */
     private function writeLucideTwigIcon(
         string $icon,
@@ -735,6 +722,7 @@ final class IconsGenerateCommand extends AbstractCommand
 
         if (false === $svg) {
             $this->io->warning('Unable to read Lucide icon source ' . $sourcePath);
+
             return false;
         }
 
@@ -744,6 +732,7 @@ final class IconsGenerateCommand extends AbstractCommand
 
         if (!@$document->loadXML($svg)) {
             $this->io->warning(sprintf('Invalid SVG for Lucide icon %s (%s)', $icon, $sourcePath));
+
             return false;
         }
 
@@ -751,6 +740,7 @@ final class IconsGenerateCommand extends AbstractCommand
 
         if (null === $svgElement) {
             $this->io->warning(sprintf('SVG element missing for Lucide icon %s (%s)', $icon, $sourcePath));
+
             return false;
         }
 
@@ -772,5 +762,21 @@ final class IconsGenerateCommand extends AbstractCommand
         file_put_contents($outputPath, $wrapped);
 
         return true;
+    }
+
+    private function writeTwigIcon(
+        string $icon,
+        string $sourcePath,
+        string $destinationDir,
+    ): bool {
+        // Check if this is a FontAwesome icon
+        $parsed = $this->parseIconName($icon);
+
+        if (null !== $parsed && 'fontawesome' === $parsed['type']) {
+            return $this->writeFontAwesomeTwigIcon($icon, $parsed, $sourcePath, $destinationDir);
+        }
+
+        // Default Lucide processing
+        return $this->writeLucideTwigIcon($icon, $sourcePath, $destinationDir);
     }
 }
