@@ -1,6 +1,6 @@
 # Valksor PHP Dev
 
-[![valksor](https://badgen.net/static/org/valksor/green)](https://github.com/valksor) 
+[![valksor](https://badgen.net/static/org/valksor/green)](https://github.com/valksor)
 [![BSD-3-Clause](https://img.shields.io/badge/BSD--3--Clause-green?style=flat)](https://github.com/valksor/php-dev/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/valksor/php-dev/badge.svg?branch=master)](https://coveralls.io/github/valksor/php-dev?branch=master)
 [![php](https://badgen.net/static/php/>=8.4/purple)](https://www.php.net/releases/8.4/en.php)
@@ -197,11 +197,11 @@ public/styles/app.css
 @source "../js/*.js";
 
 @theme {
-  --color-primary: #3b82f6;
+    --color-primary: #3b82f6;
 }
 
 @utility "theme-switcher" {
-  /* Custom utilities if needed */
+    /* Custom utilities if needed */
 }
 ```
 
@@ -213,8 +213,8 @@ Your JavaScript automatically gets import map support:
 
 ```javascript
 // assets/js/app.js
-import { hotwire } from '@hotwired/turbo';
-import { stimulus } from '@hotwired/stimulus';
+import { hotwire } from "@hotwired/turbo";
+import { stimulus } from "@hotwired/stimulus";
 
 // These imports are automatically resolved by the import map system
 // No need for manual script tags or complex bundling setup

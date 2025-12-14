@@ -1,6 +1,6 @@
 # ValksorDev Build Tools
 
-[![valksor](https://badgen.net/static/org/valksor/green)](https://github.com/valksor) 
+[![valksor](https://badgen.net/static/org/valksor/green)](https://github.com/valksor)
 [![BSD-3-Clause](https://img.shields.io/badge/BSD--3--Clause-green?style=flat)](https://github.com/valksor/php-dev-build/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/valksor/php-dev-build/badge.svg?branch=master)](https://coveralls.io/github/valksor/php-dev-build?branch=master)
 [![php](https://badgen.net/static/php/>=8.4/purple)](https://www.php.net/releases/8.4/en.php)
@@ -321,21 +321,19 @@ Create `tailwind.config.js` in your project root:
 
 ```javascript
 module.exports = {
-  content: [
-    './templates/**/*.html.twig',
-    './src/**/*.php',
-    './assets/js/**/*.js',
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [
-    require('daisyui'),
-  ],
-  daisyui: {
-    themes: ['light', 'dark', 'cupcake'],
-  },
-}
+    content: [
+        "./templates/**/*.html.twig",
+        "./src/**/*.php",
+        "./assets/js/**/*.js",
+    ],
+    theme: {
+        extend: {},
+    },
+    plugins: [require("daisyui")],
+    daisyui: {
+        themes: ["light", "dark", "cupcake"],
+    },
+};
 ```
 
 ## Import Map Management
@@ -353,8 +351,8 @@ valksor:
 
 ```javascript
 // assets/js/app.js
-import { hotwire } from '@hotwired/turbo';
-import { stimulus } from '@hotwired/stimulus';
+import { hotwire } from "@hotwired/turbo";
+import { stimulus } from "@hotwired/stimulus";
 
 // Import maps automatically resolve these imports
 ```

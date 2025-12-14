@@ -188,6 +188,7 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                     'required' => [],
                     'cache_duration' => 3600,
                     'generic_npm_packages' => '',
+                    'pinned_versions' => [],
                 ],
             ],
             'icons' => [

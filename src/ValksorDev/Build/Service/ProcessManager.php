@@ -321,7 +321,9 @@ final class ProcessManager
         $failed = [];
 
         foreach ($this->processes as $name => $process) {
-            if (!$process->isRunning() && !$process->isSuccessful()) {
+            // Consider any non-running process as failed, regardless of exit code
+            // Long-running services like SSE should never exit on their own
+            if (!$process->isRunning()) {
                 $failed[$name] = $process;
             }
         }

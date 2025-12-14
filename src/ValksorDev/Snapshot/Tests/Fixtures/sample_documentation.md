@@ -16,6 +16,7 @@ The snapshot generator is designed to create AI-optimized documentation from pro
 ### Intelligent Filtering
 
 The system automatically excludes:
+
 - Binary files and executables
 - Large dependency directories (vendor, node_modules)
 - Build artifacts and cache files
@@ -25,6 +26,7 @@ The system automatically excludes:
 ### Content Processing
 
 Files are processed with these safeguards:
+
 - **Binary Detection**: Files containing null bytes are excluded
 - **Size Limits**: Configurable maximum file size (default: 1MB)
 - **Line Limits**: Content is truncated if too long (default: 1000 lines)
@@ -33,6 +35,7 @@ Files are processed with these safeguards:
 ### Output Format
 
 The generated snapshot follows MCP (Markdown Context Pack) format:
+
 - Project summary with statistics
 - Individual file sections with metadata
 - Formatted code blocks with syntax hints
@@ -110,6 +113,7 @@ php bin/console valksor:snapshot \
 The snapshot generator handles various file types:
 
 ### Code Files
+
 - **PHP** (.php) - Source code with syntax highlighting
 - **JavaScript** (.js, .mjs) - Client and server-side JavaScript
 - **CSS** (.css) - Stylesheets and component styles
@@ -118,11 +122,13 @@ The snapshot generator handles various file types:
 - **JSON** (.json) - Data and configuration files
 
 ### Documentation Files
+
 - **Markdown** (.md) - Documentation files like this one
 - **Text** (.txt) - Plain text documentation
 - **README** - Project documentation
 
 ### Configuration Files
+
 - **Environment** (.env, .env.dist) - Environment configuration
 - **XML** (.xml) - Configuration and data files
 - **INI** (.ini) - Configuration files
@@ -140,16 +146,19 @@ The snapshot generator handles various file types:
 ### Common Issues
 
 **Empty Snapshots**
+
 - Check if exclusion patterns are too broad
 - Verify file paths are accessible
 - Ensure file limits are reasonable
 
 **Memory Issues**
+
 - Reduce `max_files` limit
 - Lower `max_file_size` setting
 - Exclude large directories
 
 **Missing Files**
+
 - Review exclusion patterns
 - Check file permissions
 - Verify path specifications
@@ -163,6 +172,7 @@ php bin/console valksor:snapshot --verbose
 ```
 
 This will show:
+
 - Files being processed
 - Exclusion patterns matching
 - File size and line information

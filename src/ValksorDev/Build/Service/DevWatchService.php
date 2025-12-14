@@ -476,7 +476,14 @@ final class DevWatchService
         }
 
         // Final verification - ensure the process is still running
-        return $process->isRunning() ? Command::SUCCESS : Command::FAILURE;
+        if ($process->isRunning()) {
+            // Register SSE process with ProcessManager for monitoring and restart
+            $this->processManager->addProcess('sse', $process);
+
+            return Command::SUCCESS;
+        }
+
+        return Command::FAILURE;
     }
 
     /**

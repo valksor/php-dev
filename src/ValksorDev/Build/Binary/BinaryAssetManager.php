@@ -73,7 +73,8 @@ final class BinaryAssetManager
      *     target_dir: string,
      *     version_in_path?: bool,
      *     download_strategy?: 'release'|'tag'|'commit',
-     *     commit_ref?: string
+     *     commit_ref?: string,
+     *     pinned_version?: string
      * } $toolConfig
      */
     public function __construct(
@@ -91,6 +92,39 @@ final class BinaryAssetManager
         $targetDir = $this->toolConfig['target_dir'];
         $this->ensureDirectory($targetDir);
 
+        $currentTag = $this->readCurrentTag($targetDir);
+        $assetsPresent = $this->assetsPresent($targetDir);
+
+        // Check for pinned version first
+        if (isset($this->toolConfig['pinned_version'])) {
+            $pinnedVersion = $this->toolConfig['pinned_version'];
+
+            if (null !== $currentTag && $assetsPresent && $currentTag === $pinnedVersion) {
+                $this->log($logger, sprintf('%s assets pinned to version %s.', $this->toolConfig['name'], $currentTag));
+
+                return $currentTag;
+            }
+
+            // Download pinned version
+            $this->log($logger, sprintf('Downloading %s assets (%s)…', $this->toolConfig['name'], $pinnedVersion));
+
+            if ('npm' === $this->toolConfig['source']) {
+                $this->downloadNpmAsset($pinnedVersion, $targetDir);
+            } elseif ('github-zip' === $this->toolConfig['source'] || in_array($this->toolConfig['download_strategy'] ?? 'release', ['tag', 'commit'], true)) {
+                $this->downloadGithubZipAsset($pinnedVersion, $targetDir);
+            } else {
+                foreach ($this->toolConfig['assets'] as $assetConfig) {
+                    $this->downloadAsset($pinnedVersion, $assetConfig, $targetDir);
+                }
+            }
+
+            $this->writeVersionFile($targetDir, $pinnedVersion, $pinnedVersion);
+            $this->log($logger, sprintf('%s assets updated.', $this->toolConfig['name']));
+
+            return $pinnedVersion;
+        }
+
+        // Original logic for non-pinned versions
         $downloadStrategy = $this->toolConfig['download_strategy'] ?? 'release';
         $latest = match (true) {
             'npm' === $this->toolConfig['source'] => $this->fetchLatestNpmVersion(),
@@ -98,9 +132,6 @@ final class BinaryAssetManager
             'commit' === $downloadStrategy => $this->fetchLatestCommit(),
             default => $this->fetchLatestRelease(),
         };
-
-        $currentTag = $this->readCurrentTag($targetDir);
-        $assetsPresent = $this->assetsPresent($targetDir);
 
         if (null !== $currentTag && $assetsPresent && $currentTag === $latest['version']) {
             $this->log($logger, sprintf('%s assets already current (%s).', $this->toolConfig['name'], $currentTag));

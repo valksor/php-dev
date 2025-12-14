@@ -85,10 +85,13 @@ final class IconsGenerateCommand extends AbstractCommand
         $this->cacheRoot = $projectRoot . '/var/lucide-static';
         $this->ensureDirectory($this->cacheRoot);
 
-        $lucideDir = $this->ensureLucideIcons();
+        // Validate icon sources (FontAwesome and/or Lucide)
+        try {
+            $iconSources = $this->validateAndPrepareIconSources();
+        } catch (RuntimeException $exception) {
+            $this->io->error($exception->getMessage());
 
-        if (null === $lucideDir) {
-            $this->io->warning('No Lucide icon source could be located. Only local and shared overrides will be used.');
+            return 1; // Return error code when no icon sources are available
         }
 
         $sharedIcons = $this->readJsonList($this->getInfrastructureDir() . '/assets/icons.json');
@@ -109,7 +112,7 @@ final class IconsGenerateCommand extends AbstractCommand
             $generated += $this->generateForTarget(
                 $targetId,
                 $iconNames,
-                $lucideDir,
+                $iconSources,
             );
         }
 
@@ -407,12 +410,13 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
-     * @param array<int,string> $icons
+     * @param array<int,string>          $icons
+     * @param array<string, string|null> $iconSources ['fontawesome' => ?string, 'lucide' => ?string]
      */
     private function generateForTarget(
         string $target,
         array $icons,
-        ?string $lucideIconDir,
+        array $iconSources,
     ): int {
         $icons = array_map('strval', $icons);
 
@@ -440,10 +444,10 @@ final class IconsGenerateCommand extends AbstractCommand
         $generated = 0;
 
         foreach ($icons as $icon) {
-            $source = $this->locateIconSource($icon, $lucideIconDir);
+            $source = $this->locateIconSource($icon, $iconSources);
 
             if (null === $source) {
-                $this->io->warning(sprintf('[%s] Icon "%s" not found in lucide sources.', $target, $icon));
+                $this->io->warning(sprintf('[%s] Icon "%s" not found in available icon sources.', $target, $icon));
 
                 continue;
             }
@@ -517,18 +521,28 @@ final class IconsGenerateCommand extends AbstractCommand
         return is_file($iconPath) ? $iconPath : null;
     }
 
+    /**
+     * @param array<string, string|null> $iconSources ['fontawesome' => ?string, 'lucide' => ?string]
+     */
     private function locateIconSource(
         string $icon,
-        ?string $lucideDir,
+        array $iconSources,
     ): ?string {
         // Check if this is a FontAwesome icon
         $parsed = $this->parseIconName($icon);
 
         if (null !== $parsed && 'fontawesome' === $parsed['type']) {
-            return $this->locateFontAwesomeIcon($parsed);
+            // Only look for FontAwesome icons if FontAwesome is available
+            if ($iconSources['fontawesome']) {
+                return $this->locateFontAwesomeIcon($parsed);
+            }
+
+            return null;
         }
 
         // Default Lucide processing
+        $lucideDir = $iconSources['lucide'];
+
         if (null === $lucideDir || !is_dir($lucideDir)) {
             return null;
         }
@@ -606,6 +620,112 @@ final class IconsGenerateCommand extends AbstractCommand
         }
 
         return array_map('strval', $data);
+    }
+
+    /**
+     * Validate and prepare icon sources from both FontAwesome and Lucide.
+     * Returns array with available sources or throws exception when neither is available.
+     *
+     * @return array<string, string|null> ['fontawesome' => ?string, 'lucide' => ?string]
+     *
+     * @throws RuntimeException When neither icon source is available
+     */
+    private function validateAndPrepareIconSources(): array
+    {
+        $sources = [
+            'fontawesome' => null,
+            'lucide' => null,
+        ];
+
+        // Check FontAwesome first
+        $sources['fontawesome'] = $this->validateFontAwesomeAvailability();
+
+        if ($sources['fontawesome']) {
+            $this->io->success(sprintf('✅ Using FontAwesome icons from: %s', $sources['fontawesome']));
+        }
+
+        // Check Lucide if needed (when FontAwesome not available or as additional source)
+        $lucideDir = $this->findExistingLucideIcons();
+
+        if (null === $lucideDir) {
+            // Try to download Lucide if not available locally
+            $lucideDir = $this->ensureLucideIcons();
+        }
+
+        if ($lucideDir) {
+            $sources['lucide'] = $lucideDir;
+            $this->io->success(sprintf('✅ Using Lucide icons from: %s', $lucideDir));
+        }
+
+        // Validate that at least one source is available
+        if (null === $sources['fontawesome'] && null === $sources['lucide']) {
+            throw new RuntimeException('❌ ERROR: No icon sources available. Configure FontAwesome path or ensure Lucide icons are accessible.');
+        }
+
+        // Provide summary when both sources are available
+        if ($sources['fontawesome'] && $sources['lucide']) {
+            $this->io->success('✅ Using both FontAwesome and Lucide icons');
+        }
+
+        return $sources;
+    }
+
+    /**
+     * Validate FontAwesome configuration and directory structure.
+     */
+    private function validateFontAwesomeAvailability(): ?string
+    {
+        $servicesConfig = $this->parameterBag->get('valksor.build.services');
+        $iconsConfig = $servicesConfig['icons']['options'] ?? [];
+
+        // Check if FontAwesome is enabled
+        $fontawesomeEnabled = $iconsConfig['fontawesome_enabled'] ?? true;
+
+        if (!$fontawesomeEnabled) {
+            $this->io->text('FontAwesome is disabled in configuration.');
+
+            return null;
+        }
+
+        $fontawesomePath = $iconsConfig['fontawesome_path'] ?? null;
+
+        if (empty($fontawesomePath)) {
+            return null;
+        }
+
+        // If path is relative, resolve it from project root using existing pattern
+        if (!str_starts_with($fontawesomePath, '/')) {
+            $fontawesomePath = $this->resolveProjectRoot() . '/' . $fontawesomePath;
+        }
+
+        // Validate directory exists
+        if (!is_dir($fontawesomePath)) {
+            $this->io->warning(sprintf('FontAwesome configured but path is invalid: %s', $fontawesomePath));
+
+            return null;
+        }
+
+        // Check for FontAwesome directory structure (at least one style subdirectory)
+        $validStyles = ['solid', 'regular', 'light', 'duotone', 'brands'];
+        $hasValidStructure = false;
+
+        foreach ($validStyles as $style) {
+            $styleDir = $fontawesomePath . '/' . $style;
+
+            if (is_dir($styleDir)) {
+                $hasValidStructure = true;
+
+                break;
+            }
+        }
+
+        if (!$hasValidStructure) {
+            $this->io->warning(sprintf('FontAwesome directory exists but has invalid structure. Expected subdirectories: %s', implode(', ', $validStyles)));
+
+            return null;
+        }
+
+        return $fontawesomePath;
     }
 
     /**

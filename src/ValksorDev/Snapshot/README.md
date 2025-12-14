@@ -41,8 +41,8 @@ valksor:
         enabled: true
 
         # File Processing Limits
-        max_files: 500      # Maximum files to process
-        max_lines: 1000     # Maximum lines per file
+        max_files: 500 # Maximum files to process
+        max_lines: 1000 # Maximum lines per file
         max_file_size: 1024 # Maximum file size in KB
 
         # Exclusion Patterns (Gitignore-style)
@@ -78,19 +78,23 @@ valksor:
 ### Pattern Types Explained
 
 #### Directory Patterns
+
 - `vendor` - Excludes any directory named "vendor" anywhere in the project
 - `node_modules` - Excludes any directory named "node_modules" anywhere
 - `tests` - Excludes any directory named "tests" or "Tests" anywhere
 
 #### File Extension Patterns
+
 - `.neon` - Excludes all files ending with `.neon`
 - `.md` - Excludes all markdown files
 - `.lock` - Excludes lock files
 
 #### Root-Only Patterns
+
 - `config/` - Excludes `config/` directory only at project root (not `src/config/`)
 
 #### Glob Patterns
+
 - `**/coverage/**` - Excludes any directory named "coverage" and its contents
 - `**/*.log` - Excludes all `.log` files anywhere in the project
 
@@ -121,7 +125,7 @@ php bin/console valksor:snapshot --max_file_size=2048
 ### Command Options
 
 | Option            | Description                                       | Default                          |
-|-------------------|---------------------------------------------------|----------------------------------|
+| ----------------- | ------------------------------------------------- | -------------------------------- |
 | `--path`          | Directory(s) to scan (can be used multiple times) | Project root                     |
 | `--output_file`   | Output file path                                  | `snapshot_YYYY_MM_DD_HHMMSS.mcp` |
 | `--max_files`     | Maximum files to process                          | 500                              |
@@ -132,12 +136,13 @@ php bin/console valksor:snapshot --max_file_size=2048
 
 The snapshot generates an MCP (Markdown Context Pack) file with:
 
-```markdown
+````markdown
 # Project Name Snapshot
 
 This is a comprehensive MCP snapshot of the Project Name project generated on...
 
 ## Summary
+
 - **Files Processed:** 42
 - **Total Size:** 156.7 KB
 - **Generated:** 2024-01-15 14:30:22
@@ -145,6 +150,7 @@ This is a comprehensive MCP snapshot of the Project Name project generated on...
 ## Files
 
 ### src/Controller/UserController.php
+
 **Path:** `src/Controller/UserController.php`
 **Lines:** 85
 **Size:** 3,245 bytes
@@ -153,8 +159,10 @@ This is a comprehensive MCP snapshot of the Project Name project generated on...
 <?php
 // File content here
 ```
+````
 
 ### config/services.yaml
+
 **Path:** `config/services.yaml`
 **Lines:** 23
 **Size:** 892 bytes
@@ -162,7 +170,8 @@ This is a comprehensive MCP snapshot of the Project Name project generated on...
 ```yaml
 # File content here
 ```
-```
+
+````
 
 ## Advanced Usage
 
@@ -180,7 +189,7 @@ valksor:
             - "docs/api/**"       # Exclude generated API docs
             - "*.generated.php"   # Exclude generated PHP files
             - "temp/**"           # Exclude temp directory contents
-```
+````
 
 ### Environment-Specific Snapshots
 
@@ -191,25 +200,26 @@ Different configurations for development vs production:
 valksor:
     snapshot:
         enabled: true
-        max_files: 1000      # More files for development
-        max_lines: 2000      # More lines for debugging
+        max_files: 1000 # More files for development
+        max_lines: 2000 # More lines for debugging
         exclude:
             - "vendor/"
             - "node_modules/"
             - ".coverage"
 ```
+
 ```yaml
 # config/packages/prod/valksor.yaml
 valksor:
     snapshot:
         enabled: true
-        max_files: 300       # Fewer files for production docs
-        max_lines: 500       # Focused content
+        max_files: 300 # Fewer files for production docs
+        max_lines: 500 # Focused content
         exclude:
             - "vendor/"
             - "node_modules/"
             - "tests/"
-            - "src/Dev/"     # Exclude dev utilities
+            - "src/Dev/" # Exclude dev utilities
 ```
 
 ### Integration with AI Workflows
@@ -262,9 +272,9 @@ For large codebases, consider these optimizations:
 ```yaml
 valksor:
     snapshot:
-        max_files: 100       # Start with fewer files
-        max_lines: 500       # Reasonable line limits
-        max_file_size: 512   # Smaller file size limit
+        max_files: 100 # Start with fewer files
+        max_lines: 500 # Reasonable line limits
+        max_file_size: 512 # Smaller file size limit
         exclude:
             # Aggressive exclusions for speed
             - "vendor/"
@@ -292,24 +302,27 @@ php bin/console valksor:snapshot --path=src/Bundle/ --output_file=bundle_docs.mc
 ### Common Issues
 
 **Memory Usage on Large Projects**
+
 ```yaml
 valksor:
     snapshot:
-        max_files: 200       # Reduce file count
-        max_file_size: 512   # Reduce file size
+        max_files: 200 # Reduce file count
+        max_file_size: 512 # Reduce file size
 ```
 
 **Missing Files**
+
 ```yaml
 valksor:
     snapshot:
         exclude:
             # Remove overly broad exclusions
             # - "*.php"  # This would exclude all PHP files
-            - "tests/"    # Use specific paths instead
+            - "tests/" # Use specific paths instead
 ```
 
 **Empty Snapshots**
+
 ```bash
 # Check if paths exist
 php bin/console valksor:snapshot --path=nonexistent/path --verbose
@@ -361,12 +374,14 @@ max_files: 100
 max_lines: 1000
 max_file_size: 1024
 ```
+
 ```yaml
 # For comprehensive documentation
 max_files: 1000
 max_lines: 5000
 max_file_size: 2048
 ```
+
 ```yaml
 # For quick overviews
 max_files: 50
@@ -385,27 +400,27 @@ name: Generate Documentation
 on: [push]
 
 jobs:
-  snapshot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-      - name: Install dependencies
-        run: composer install
-      - name: Generate snapshot
-        run: |
-          php bin/console valksor:snapshot \
-            --output_file=project_snapshot.mcp \
-            --max_files=500 \
-            --max_lines=1000
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: project-snapshot
-          path: project_snapshot.mcp
+    snapshot:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.4"
+            - name: Install dependencies
+              run: composer install
+            - name: Generate snapshot
+              run: |
+                  php bin/console valksor:snapshot \
+                    --output_file=project_snapshot.mcp \
+                    --max_files=500 \
+                    --max_lines=1000
+            - name: Upload artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: project-snapshot
+                  path: project_snapshot.mcp
 ```
 
 ### AI Code Review Workflow

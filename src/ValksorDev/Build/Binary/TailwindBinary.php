@@ -44,7 +44,7 @@ final readonly class TailwindBinary implements BinaryInterface
     ): BinaryAssetManager {
         $platform ??= BinaryAssetManager::detectPlatform();
 
-        return new BinaryAssetManager([
+        $config = [
             'name' => 'Tailwind CSS',
             'source' => 'github',
             'repo' => 'tailwindlabs/tailwindcss',
@@ -56,6 +56,13 @@ final readonly class TailwindBinary implements BinaryInterface
                 ],
             ],
             'target_dir' => $targetDir,
-        ], $parameterBag);
+        ];
+
+        // Check for pinned version in parameter bag
+        if ($parameterBag && $parameterBag->has('valksor.build.services.binaries.options.pinned_versions.tailwindcss')) {
+            $config['pinned_version'] = $parameterBag->get('valksor.build.services.binaries.options.pinned_versions.tailwindcss');
+        }
+
+        return new BinaryAssetManager($config, $parameterBag);
     }
 }
