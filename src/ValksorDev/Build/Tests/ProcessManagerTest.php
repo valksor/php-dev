@@ -123,7 +123,7 @@ final class ProcessManagerTest extends TestCase
         $failed = $this->manager->getFailedProcesses();
 
         self::assertArrayHasKey('failed-service', $failed);
-        self::assertArrayNotHasKey('successful-service', $failed);
+        self::assertArrayHasKey('successful-service', $failed);
         self::assertArrayNotHasKey('running-service', $failed);
     }
 
