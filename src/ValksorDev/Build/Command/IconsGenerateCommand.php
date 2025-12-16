@@ -623,6 +623,66 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
+     * Scan all requested icons to determine which icon types are needed.
+     *
+     * @return array<string, bool> ['fontawesome' => bool, 'lucide' => bool]
+     */
+    private function scanRequestedIconTypes(): array
+    {
+        $needsFontAwesome = false;
+        $needsLucide = false;
+
+        // Check shared icons
+        $sharedIcons = $this->readJsonList($this->getInfrastructureDir() . '/assets/icons.json');
+
+        foreach ($sharedIcons as $icon) {
+            $parsed = $this->parseIconName($icon);
+            if ($parsed && 'fontawesome' === $parsed['type']) {
+                $needsFontAwesome = true;
+            } else {
+                $needsLucide = true;
+            }
+        }
+
+        // Check app-specific icons
+        $appsDir = $this->getAppsDir();
+        if (is_dir($appsDir)) {
+            $handle = opendir($appsDir);
+            if (false !== $handle) {
+                try {
+                    while (($entry = readdir($handle)) !== false) {
+                        if ('.' === $entry || '..' === $entry) {
+                            continue;
+                        }
+
+                        $iconsPath = $appsDir . '/' . $entry . '/assets/icons.json';
+                        if (!is_file($iconsPath)) {
+                            continue;
+                        }
+
+                        $appIcons = $this->readJsonList($iconsPath);
+                        foreach ($appIcons as $icon) {
+                            $parsed = $this->parseIconName($icon);
+                            if ($parsed && 'fontawesome' === $parsed['type']) {
+                                $needsFontAwesome = true;
+                            } else {
+                                $needsLucide = true;
+                            }
+                        }
+                    }
+                } finally {
+                    closedir($handle);
+                }
+            }
+        }
+
+        return [
+            'fontawesome' => $needsFontAwesome,
+            'lucide' => $needsLucide,
+        ];
+    }
+
+    /**
      * Validate and prepare icon sources from both FontAwesome and Lucide.
      * Returns array with available sources or throws exception when neither is available.
      *
@@ -637,29 +697,54 @@ final class IconsGenerateCommand extends AbstractCommand
             'lucide' => null,
         ];
 
-        // Check FontAwesome first
-        $sources['fontawesome'] = $this->validateFontAwesomeAvailability();
+        // First, scan what icon types are actually needed
+        $neededTypes = $this->scanRequestedIconTypes();
 
-        if ($sources['fontawesome']) {
-            $this->io->success(sprintf('✅ Using FontAwesome icons from: %s', $sources['fontawesome']));
+        $this->io->text(sprintf(
+            'Icon types needed: FontAwesome=%s, Lucide=%s',
+            $neededTypes['fontawesome'] ? 'yes' : 'no',
+            $neededTypes['lucide'] ? 'yes' : 'no'
+        ));
+
+        // Only validate FontAwesome if it's needed
+        if ($neededTypes['fontawesome']) {
+            $sources['fontawesome'] = $this->validateFontAwesomeAvailability();
+
+            if ($sources['fontawesome']) {
+                $this->io->success(sprintf('✅ Using FontAwesome icons from: %s', $sources['fontawesome']));
+            } else {
+                $this->io->warning('⚠️  FontAwesome icons needed but not available');
+            }
         }
 
-        // Check Lucide if needed (when FontAwesome not available or as additional source)
-        $lucideDir = $this->findExistingLucideIcons();
+        // Only validate Lucide if it's needed
+        if ($neededTypes['lucide']) {
+            $lucideDir = $this->findExistingLucideIcons();
 
-        if (null === $lucideDir) {
-            // Try to download Lucide if not available locally
-            $lucideDir = $this->ensureLucideIcons();
+            if (null === $lucideDir) {
+                // Try to download Lucide if not available locally
+                $lucideDir = $this->ensureLucideIcons();
+            }
+
+            if ($lucideDir) {
+                $sources['lucide'] = $lucideDir;
+                $this->io->success(sprintf('✅ Using Lucide icons from: %s', $lucideDir));
+            } else {
+                $this->io->warning('⚠️  Lucide icons needed but not available');
+            }
         }
 
-        if ($lucideDir) {
-            $sources['lucide'] = $lucideDir;
-            $this->io->success(sprintf('✅ Using Lucide icons from: %s', $lucideDir));
+        // Validate that all needed icon sources are available
+        $errors = [];
+        if ($neededTypes['fontawesome'] && null === $sources['fontawesome']) {
+            $errors[] = 'FontAwesome icons are requested but not available';
+        }
+        if ($neededTypes['lucide'] && null === $sources['lucide']) {
+            $errors[] = 'Lucide icons are requested but not available';
         }
 
-        // Validate that at least one source is available
-        if (null === $sources['fontawesome'] && null === $sources['lucide']) {
-            throw new RuntimeException('❌ ERROR: No icon sources available. Configure FontAwesome path or ensure Lucide icons are accessible.');
+        if (!empty($errors)) {
+            throw new RuntimeException('❌ ERROR: ' . implode('; ', $errors));
         }
 
         // Provide summary when both sources are available
