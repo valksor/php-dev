@@ -168,7 +168,6 @@ final class OutputGenerator
 
         $metadataJson = [
             'format_version' => '1.0.0',
-            'generated_at' => date('c'),
             'num_files' => $stats['files_processed'],
             'total_size_kb' => round($stats['total_size'] / 1024, 2),
             'generator' => 'Valksor Snapshot Command',
