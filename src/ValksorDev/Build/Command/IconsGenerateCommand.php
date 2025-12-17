@@ -637,6 +637,7 @@ final class IconsGenerateCommand extends AbstractCommand
 
         foreach ($sharedIcons as $icon) {
             $parsed = $this->parseIconName($icon);
+
             if ($parsed && 'fontawesome' === $parsed['type']) {
                 $needsFontAwesome = true;
             } else {
@@ -646,8 +647,10 @@ final class IconsGenerateCommand extends AbstractCommand
 
         // Check app-specific icons
         $appsDir = $this->getAppsDir();
+
         if (is_dir($appsDir)) {
             $handle = opendir($appsDir);
+
             if (false !== $handle) {
                 try {
                     while (($entry = readdir($handle)) !== false) {
@@ -656,13 +659,16 @@ final class IconsGenerateCommand extends AbstractCommand
                         }
 
                         $iconsPath = $appsDir . '/' . $entry . '/assets/icons.json';
+
                         if (!is_file($iconsPath)) {
                             continue;
                         }
 
                         $appIcons = $this->readJsonList($iconsPath);
+
                         foreach ($appIcons as $icon) {
                             $parsed = $this->parseIconName($icon);
+
                             if ($parsed && 'fontawesome' === $parsed['type']) {
                                 $needsFontAwesome = true;
                             } else {
@@ -703,7 +709,7 @@ final class IconsGenerateCommand extends AbstractCommand
         $this->io->text(sprintf(
             'Icon types needed: FontAwesome=%s, Lucide=%s',
             $neededTypes['fontawesome'] ? 'yes' : 'no',
-            $neededTypes['lucide'] ? 'yes' : 'no'
+            $neededTypes['lucide'] ? 'yes' : 'no',
         ));
 
         // Only validate FontAwesome if it's needed
@@ -736,9 +742,11 @@ final class IconsGenerateCommand extends AbstractCommand
 
         // Validate that all needed icon sources are available
         $errors = [];
+
         if ($neededTypes['fontawesome'] && null === $sources['fontawesome']) {
             $errors[] = 'FontAwesome icons are requested but not available';
         }
+
         if ($neededTypes['lucide'] && null === $sources['lucide']) {
             $errors[] = 'Lucide icons are requested but not available';
         }

@@ -21,7 +21,6 @@ use function array_sum;
 use function arsort;
 use function basename;
 use function count;
-use function date;
 use function end;
 use function explode;
 use function implode;
