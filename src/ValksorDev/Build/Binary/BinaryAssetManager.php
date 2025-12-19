@@ -27,6 +27,7 @@ use function exec;
 use function explode;
 use function file_get_contents;
 use function file_put_contents;
+use function http_get_last_response_headers;
 use function implode;
 use function in_array;
 use function is_array;
@@ -584,11 +585,13 @@ final class BinaryAssetManager
         $response = @file_get_contents($apiUrl, false, $context);
 
         // Check HTTP response code
-        if (isset($http_response_header)) {
-            $statusCode = $this->extractHttpStatusCode($http_response_header);
+        $responseHeaders = http_get_last_response_headers();
+
+        if (null !== $responseHeaders) {
+            $statusCode = $this->extractHttpStatusCode($responseHeaders);
 
             if (403 === $statusCode) {
-                $rateLimitInfo = $this->parseRateLimitHeaders($http_response_header);
+                $rateLimitInfo = $this->parseRateLimitHeaders($responseHeaders);
 
                 if (0 === $rateLimitInfo['remaining']) {
                     $resetTime = $rateLimitInfo['reset'] ? date('Y-m-d H:i:s', $rateLimitInfo['reset']) : 'unknown';
