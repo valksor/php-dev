@@ -151,7 +151,7 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                                                 ],
                                             ],
                                         ])
-                                        ->defaultValue(self::getDefaults())
+                                        ->defaultValue(self::getDefaults()['services'])
                                     ->end()
                                 ->end()
                             ->end()
@@ -180,53 +180,55 @@ class BuildConfiguration extends AbstractDependencyConfiguration
     public static function getDefaults(): array
     {
         return [
-            'binaries' => [
-                'enabled' => true,
-                'provider' => 'binaries',
-                'flags' => ['init' => true, 'dev' => false, 'prod' => true],
-                'options' => [
-                    'required' => [],
-                    'cache_duration' => 3600,
-                    'generic_npm_packages' => '',
-                    'pinned_versions' => [],
+            'services' => [
+                'binaries' => [
+                    'enabled' => true,
+                    'provider' => 'binaries',
+                    'flags' => ['init' => true, 'dev' => false, 'prod' => true],
+                    'options' => [
+                        'required' => [],
+                        'cache_duration' => 3600,
+                        'generic_npm_packages' => '',
+                        'pinned_versions' => [],
+                    ],
                 ],
-            ],
-            'icons' => [
-                'enabled' => true,
-                'provider' => 'icons',
-                'flags' => ['init' => true, 'dev' => false, 'prod' => true],
-                'options' => [
-                    'fontawesome_path' => null,
-                    'fontawesome_enabled' => true,
+                'icons' => [
+                    'enabled' => true,
+                    'provider' => 'icons',
+                    'flags' => ['init' => true, 'dev' => false, 'prod' => true],
+                    'options' => [
+                        'fontawesome_path' => null,
+                        'fontawesome_enabled' => true,
+                    ],
                 ],
-            ],
-            'assets' => [
-                'enabled' => true,
-                'provider' => 'assets',
-                'flags' => ['init' => false, 'dev' => false, 'prod' => true],
-                'options' => [],
-            ],
-            'tailwind' => [
-                'enabled' => true,
-                'provider' => 'tailwind',
-                'flags' => ['init' => false, 'dev' => true, 'prod' => true],
-                'options' => ['minify' => false, ],
-            ],
-            'importmap' => [
-                'enabled' => true,
-                'provider' => 'importmap',
-                'flags' => ['init' => false, 'dev' => true, 'prod' => true],
-                'options' => ['watch' => true, 'minify' => false],
-            ],
-            'hot_reload' => [
-                'enabled' => true,
-                'provider' => 'hot_reload',
-                'flags' => ['init' => false, 'dev' => true, 'prod' => false],
-                'options' => [
-                    'debounce_delay' => 0.3,
-                    'watch_dirs' => ['/src', '/templates'],
-                    'file_transformations' => ['*.tailwind.css' => ['output_pattern' => '{path}/{name}.css', 'debounce_delay' => 0.5, 'track_output' => true]],
-                    'extended_suffixes' => ['.tailwind.css' => 1.0, '.min.css' => 0.3],
+                'assets' => [
+                    'enabled' => true,
+                    'provider' => 'assets',
+                    'flags' => ['init' => false, 'dev' => false, 'prod' => true],
+                    'options' => [],
+                ],
+                'tailwind' => [
+                    'enabled' => true,
+                    'provider' => 'tailwind',
+                    'flags' => ['init' => false, 'dev' => true, 'prod' => true],
+                    'options' => ['minify' => false, ],
+                ],
+                'importmap' => [
+                    'enabled' => true,
+                    'provider' => 'importmap',
+                    'flags' => ['init' => false, 'dev' => true, 'prod' => true],
+                    'options' => ['watch' => true, 'minify' => false],
+                ],
+                'hot_reload' => [
+                    'enabled' => true,
+                    'provider' => 'hot_reload',
+                    'flags' => ['init' => false, 'dev' => true, 'prod' => false],
+                    'options' => [
+                        'debounce_delay' => 0.3,
+                        'watch_dirs' => ['/src', '/templates'],
+                        'file_transformations' => ['*.tailwind.css' => ['output_pattern' => '{path}/{name}.css', 'debounce_delay' => 0.5, 'track_output' => true]],
+                        'extended_suffixes' => ['.tailwind.css' => 1.0, '.min.css' => 0.3],
+                    ],
                 ],
             ],
         ];
