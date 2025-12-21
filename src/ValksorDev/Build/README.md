@@ -451,3 +451,9 @@ composer require valksor/php-dev-build
 ```
 
 Note: This package is also included in the meta-package `valksor/php-dev`.
+
+## Support
+
+- **Documentation**: [Full documentation](https://github.com/valksor/php-dev)
+- **Issues**: [GitHub Issues](https://github.com/valksor/php-dev/issues) for bug reports and feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/orgs/valksor/discussions/categories/php-dev) for questions and community support

@@ -522,6 +522,12 @@ pkill -f valksor
 - **[Build Tools Guide](src/ValksorDev/Build/README.md)** - Detailed configuration and workflow
 - **[Custom Fixers Guide](src/ValksorDev/PhpCsFixerCustomFixers/README.md)** - All available code quality fixers
 
+## Support
+
+- **Documentation**: [Full documentation](https://github.com/valksor/php-dev)
+- **Issues**: [GitHub Issues](https://github.com/valksor/php-dev/issues) for bug reports and feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/orgs/valksor/discussions/categories/php-dev) for questions and community support
+
 ## License
 
 This package is licensed under the [BSD-3-Clause License](LICENSE).

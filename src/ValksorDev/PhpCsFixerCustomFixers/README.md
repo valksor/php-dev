@@ -212,11 +212,9 @@ If you discover any security-related issues, please email us at packages@valksor
 
 ## Support
 
-- **Documentation**: [Full documentation](https://github.com/valksor/valksor-dev)
-- **Issues**: [GitHub Issues](https://github.com/valksor/valksor-dev/issues) for bug reports and feature requests
-- **Discussions**: [GitHub Discussions](https://github.com/valksor/valksor-dev/discussions) for questions and community support
-- **Stack Overflow**: Use tag `valksor-php-dev`
-- **PHP-CS-Fixer Documentation**: [Official docs](https://github.com/FriendsOfPHP/PHP-CS-Fixer)
+- **Documentation**: [Full documentation](https://github.com/valksor/php-dev)
+- **Issues**: [GitHub Issues](https://github.com/valksor/php-dev/issues) for bug reports and feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/orgs/valksor/discussions/categories/php-dev) for questions and community support
 
 ## Credits
 

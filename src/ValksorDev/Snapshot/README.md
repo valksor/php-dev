@@ -461,6 +461,12 @@ php bin/console valksor:snapshot \
 echo "API documentation generated: api_documentation.mcp"
 ```
 
+## Support
+
+- **Documentation**: [Full documentation](https://github.com/valksor/php-dev)
+- **Issues**: [GitHub Issues](https://github.com/valksor/php-dev/issues) for bug reports and feature requests
+- **Discussions**: [GitHub Discussions](https://github.com/orgs/valksor/discussions/categories/php-dev) for questions and community support
+
 ## License
 
 This package is licensed under the BSD-3-Clause License. See the [LICENSE](LICENSE) file for details.
