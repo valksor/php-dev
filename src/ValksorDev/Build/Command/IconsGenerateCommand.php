@@ -30,6 +30,7 @@ use function array_map;
 use function array_values;
 use function closedir;
 use function count;
+use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function glob;
@@ -108,6 +109,7 @@ final class IconsGenerateCommand extends AbstractCommand
         }
 
         $generated = 0;
+
         /** @var array<string, array{viewBox: string, content: string, fill: string}> $sharedSpriteSymbols */
         $sharedSpriteSymbols = [];
 
@@ -248,6 +250,24 @@ final class IconsGenerateCommand extends AbstractCommand
             }
         } finally {
             closedir($handle);
+        }
+    }
+
+    /**
+     * Clean sprite file for a target.
+     */
+    private function cleanSpriteFile(
+        string $target,
+    ): void {
+        $spritePath = $this->getSpriteFilePath($target);
+
+        if ('' === $spritePath) {
+            return;
+        }
+
+        if (is_file($spritePath)) {
+            @unlink($spritePath);
+            $this->io->text(sprintf('[%s] Removed sprite file.', $target));
         }
     }
 
@@ -402,122 +422,15 @@ final class IconsGenerateCommand extends AbstractCommand
         }
     }
 
-    private function findExistingLucideIcons(): ?string
-    {
-        // Check if Lucide icons already exist in the standard cache directory
-        if (!is_dir($this->cacheRoot)) {
-            return null;
-        }
-
-        // For lucide-static, icons are always in the icons subdirectory
-        $iconsSubdir = $this->cacheRoot . '/icons';
-
-        if ($this->iconDirectoryLooksValid($iconsSubdir)) {
-            return $iconsSubdir;
-        }
-
-        return null;
-    }
-
-    /**
-     * @param array<int,string>                                                 $icons
-     * @param array<string, string|null>                                        $iconSources ['fontawesome' => ?string, 'lucide' => ?string]
-     * @param array<string, array{viewBox: string, content: string, fill: string}> $sharedSymbols Shared symbols to include in app sprites
-     *
-     * @return array{generated: int, symbols: array<string, array{viewBox: string, content: string, fill: string}>}
-     */
-    private function generateForTarget(
-        string $target,
-        array $icons,
-        array $iconSources,
-        array $sharedSymbols = [],
-    ): array {
-        $icons = array_map('strval', $icons);
-
-        $sharedIdentifier = $this->sharedIdentifier;
-        $isSharedTarget = $target === $sharedIdentifier;
-
-        $icons = array_values($icons);
-        $count = count($icons);
-
-        $destination = $isSharedTarget
-            ? $this->getInfrastructureDir() . '/templates/icons'
-            : $this->getAppsDir() . '/' . $target . '/templates/icons';
-
-        $this->ensureDirectory($destination);
-
-        if (0 === $count) {
-            $this->io->text(sprintf('[%s] No icons to generate, cleaning up any orphaned icons.', $target));
-            // Clean up any orphaned icons even when no new icons are generated
-            $this->cleanOrphanedIcons($destination, $icons);
-            // Clean sprite file if it exists
-            $this->cleanSpriteFile($target);
-
-            return ['generated' => 0, 'symbols' => []];
-        }
-
-        $this->cleanExistingTwigIcons($destination);
-
-        $generated = 0;
-        /** @var array<string, array{viewBox: string, content: string, fill: string}> $spriteSymbols */
-        $spriteSymbols = [];
-
-        foreach ($icons as $icon) {
-            $source = $this->locateIconSource($icon, $iconSources);
-
-            if (null === $source) {
-                $this->io->warning(sprintf('[%s] Icon "%s" not found in available icon sources.', $target, $icon));
-
-                continue;
-            }
-
-            if ($this->writeTwigIcon($icon, $source, $destination)) {
-                $generated++;
-            }
-
-            // Extract symbol data for sprite
-            $symbolData = $this->extractSymbolData($icon, $source);
-
-            if (null !== $symbolData) {
-                $spriteSymbols[$icon] = $symbolData;
-            }
-        }
-
-        // Generate sprite file (for app targets, include shared symbols)
-        if ([] !== $spriteSymbols || (!$isSharedTarget && [] !== $sharedSymbols)) {
-            $allSymbols = $isSharedTarget ? $spriteSymbols : [...$sharedSymbols, ...$spriteSymbols];
-            $this->generateSpriteFile($target, $allSymbols);
-        }
-
-        // Clean up any orphaned icons after generation
-        $this->cleanOrphanedIcons($destination, $icons);
-
-        $symbolCount = $isSharedTarget ? count($spriteSymbols) : count($spriteSymbols) + count($sharedSymbols);
-        $this->io->success(sprintf('[%s] Generated %d icon%s + sprite (%d symbols).', $target, $generated, 1 === $generated ? '' : 's', $symbolCount));
-
-        return ['generated' => $generated, 'symbols' => $spriteSymbols];
-    }
-
-    /**
-     * Clean sprite file for a target.
-     */
-    private function cleanSpriteFile(string $target): void
-    {
-        $spritePath = $this->getSpriteFilePath($target);
-
-        if (is_file($spritePath)) {
-            @unlink($spritePath);
-            $this->io->text(sprintf('[%s] Removed sprite file.', $target));
-        }
-    }
-
     /**
      * Extract symbol data from an SVG file for sprite generation.
      *
      * @return array{viewBox: string, content: string, fill: string}|null
      */
-    private function extractSymbolData(string $icon, string $sourcePath): ?array
-    {
+    private function extractSymbolData(
+        string $icon,
+        string $sourcePath,
+    ): ?array {
         $svg = file_get_contents($sourcePath);
 
         if (false === $svg) {
@@ -565,15 +478,115 @@ final class IconsGenerateCommand extends AbstractCommand
         ];
     }
 
+    private function findExistingLucideIcons(): ?string
+    {
+        // Check if Lucide icons already exist in the standard cache directory
+        if (!is_dir($this->cacheRoot)) {
+            return null;
+        }
+
+        // For lucide-static, icons are always in the icons subdirectory
+        $iconsSubdir = $this->cacheRoot . '/icons';
+
+        if ($this->iconDirectoryLooksValid($iconsSubdir)) {
+            return $iconsSubdir;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int,string>                                                    $icons
+     * @param array<string, string|null>                                           $iconSources   ['fontawesome' => ?string, 'lucide' => ?string]
+     * @param array<string, array{viewBox: string, content: string, fill: string}> $sharedSymbols Shared symbols to include in app sprites
+     *
+     * @return array{generated: int, symbols: array<string, array{viewBox: string, content: string, fill: string}>}
+     */
+    private function generateForTarget(
+        string $target,
+        array $icons,
+        array $iconSources,
+        array $sharedSymbols = [],
+    ): array {
+        $icons = array_map('strval', $icons);
+
+        $sharedIdentifier = $this->sharedIdentifier;
+        $isSharedTarget = $target === $sharedIdentifier;
+
+        $icons = array_values($icons);
+        $count = count($icons);
+
+        $destination = $isSharedTarget
+            ? $this->getInfrastructureDir() . '/templates/icons'
+            : $this->getAppsDir() . '/' . $target . '/templates/icons';
+
+        $this->ensureDirectory($destination);
+
+        if (0 === $count) {
+            $this->io->text(sprintf('[%s] No icons to generate, cleaning up any orphaned icons.', $target));
+            // Clean up any orphaned icons even when no new icons are generated
+            $this->cleanOrphanedIcons($destination, $icons);
+            // Clean sprite file if it exists
+            $this->cleanSpriteFile($target);
+
+            return ['generated' => 0, 'symbols' => []];
+        }
+
+        $this->cleanExistingTwigIcons($destination);
+
+        $generated = 0;
+
+        /** @var array<string, array{viewBox: string, content: string, fill: string}> $spriteSymbols */
+        $spriteSymbols = [];
+
+        foreach ($icons as $icon) {
+            $source = $this->locateIconSource($icon, $iconSources);
+
+            if (null === $source) {
+                $this->io->warning(sprintf('[%s] Icon "%s" not found in available icon sources.', $target, $icon));
+
+                continue;
+            }
+
+            if ($this->writeTwigIcon($icon, $source, $destination)) {
+                $generated++;
+            }
+
+            // Extract symbol data for sprite
+            $symbolData = $this->extractSymbolData($icon, $source);
+
+            if (null !== $symbolData) {
+                $spriteSymbols[$icon] = $symbolData;
+            }
+        }
+
+        // Generate sprite file only for app targets (shared symbols are merged into app sprites)
+        if (!$isSharedTarget && ([] !== $spriteSymbols || [] !== $sharedSymbols)) {
+            $allSymbols = [...$sharedSymbols, ...$spriteSymbols];
+            $this->generateSpriteFile($target, $allSymbols);
+        }
+
+        // Clean up any orphaned icons after generation
+        $this->cleanOrphanedIcons($destination, $icons);
+
+        $symbolCount = $isSharedTarget ? count($spriteSymbols) : count($spriteSymbols) + count($sharedSymbols);
+        $spriteInfo = $isSharedTarget ? '' : sprintf(' + sprite (%d symbols)', $symbolCount);
+        $this->io->success(sprintf('[%s] Generated %d icon%s%s.', $target, $generated, 1 === $generated ? '' : 's', $spriteInfo));
+
+        return ['generated' => $generated, 'symbols' => $spriteSymbols];
+    }
+
     /**
      * Generate SVG sprite file containing all icons as symbols.
      *
      * @param array<string, array{viewBox: string, content: string, fill: string}> $symbols
      */
-    private function generateSpriteFile(string $target, array $symbols): void
-    {
+    private function generateSpriteFile(
+        string $target,
+        array $symbols,
+    ): void {
         $spritePath = $this->getSpriteFilePath($target);
-        $this->ensureDirectory(\dirname($spritePath));
+        $this->ensureDirectory(dirname($spritePath));
 
         $symbolsContent = '';
 
@@ -597,15 +610,6 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
-     * Get the sprite file path for a target.
-     */
-    private function getSpriteFilePath(string $target): string
-    {
-        // All sprites go to shared public location for proper asset serving
-        return $this->resolveProjectRoot() . '/public/assets/icons/sprite.svg';
-    }
-
-    /**
      * Get FontAwesome path from BuildConfiguration.
      */
     private function getFontAwesomePath(): ?string
@@ -624,6 +628,20 @@ final class IconsGenerateCommand extends AbstractCommand
         }
 
         return $fontawesomePath;
+    }
+
+    /**
+     * Get the sprite file path for a target.
+     */
+    private function getSpriteFilePath(
+        string $target,
+    ): string {
+        // Shared target doesn't get its own sprite - symbols are merged into app sprites
+        if ($target === $this->sharedIdentifier) {
+            return '';
+        }
+
+        return $this->getAppsDir() . '/' . $target . '/assets/icons/sprite.svg';
     }
 
     private function iconDirectoryLooksValid(
