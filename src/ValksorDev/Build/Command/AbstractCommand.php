@@ -121,7 +121,7 @@ abstract class AbstractCommand extends BundleAbstractCommand
         if (!$this->isWatchMode($input)) {
             // Return a no-op cleanup function for non-watch mode
             // This allows consistent cleanup calling without conditional logic
-            return function (): void {
+            return static function (): void {
                 // No cleanup needed for one-time execution
             };
         }

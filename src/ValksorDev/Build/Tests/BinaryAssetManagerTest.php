@@ -381,7 +381,7 @@ final class BinaryAssetManagerTest extends TestCase
         $manager = new BinaryAssetManager($config);
         $loggedMessages = [];
 
-        $logger = function (string $message) use (&$loggedMessages): void {
+        $logger = static function (string $message) use (&$loggedMessages): void {
             $loggedMessages[] = $message;
         };
 

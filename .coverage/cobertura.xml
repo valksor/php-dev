@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage line-rate="0.39476041200179" branch-rate="0" lines-covered="1763" lines-valid="4466" branches-covered="0" branches-valid="0" complexity="1667" version="0.4" timestamp="0">
+<coverage line-rate="0.39453649798477" branch-rate="0" lines-covered="1762" lines-valid="4466" branches-covered="0" branches-valid="0" complexity="1667" version="0.4" timestamp="0">
   <sources>
     <source>/var/www/html/valksor-dev/src/ValksorDev</source>
   </sources>
@@ -5885,9 +5885,9 @@
         </class>
       </classes>
     </package>
-    <package name="Build/Service/ProcessManager.php" line-rate="0.30687830687831" branch-rate="0" complexity="78">
+    <package name="Build/Service/ProcessManager.php" line-rate="0.3015873015873" branch-rate="0" complexity="78">
       <classes>
-        <class name="ValksorDev\Build\Service\ProcessManager" filename="Build/Service/ProcessManager.php" line-rate="0.30687830687831" branch-rate="0" complexity="78">
+        <class name="ValksorDev\Build\Service\ProcessManager" filename="Build/Service/ProcessManager.php" line-rate="0.3015873015873" branch-rate="0" complexity="78">
           <methods>
             <method name="__construct" signature="?SymfonyStyle $io, ?ConsoleCommandBuilder $commandBuilder" line-rate="1" branch-rate="0" complexity="2">
               <lines>
@@ -5955,16 +5955,16 @@
                 <line number="248" hits="0"/>
               </lines>
             </method>
-            <method name="executeProcess" signature="array $arguments, bool $isInteractive, string $serviceName" line-rate="0.5" branch-rate="0" complexity="8">
+            <method name="executeProcess" signature="array $arguments, bool $isInteractive, string $serviceName" line-rate="0.42857142857143" branch-rate="0" complexity="8">
               <lines>
                 <line number="270" hits="1"/>
                 <line number="272" hits="1"/>
                 <line number="277" hits="1"/>
                 <line number="280" hits="1"/>
                 <line number="282" hits="1"/>
-                <line number="285" hits="1"/>
-                <line number="287" hits="1"/>
-                <line number="292" hits="0"/>
+                <line number="285" hits="0"/>
+                <line number="287" hits="0"/>
+                <line number="292" hits="1"/>
                 <line number="293" hits="0"/>
                 <line number="296" hits="0"/>
                 <line number="298" hits="0"/>
@@ -6243,9 +6243,9 @@
             <line number="277" hits="1"/>
             <line number="280" hits="1"/>
             <line number="282" hits="1"/>
-            <line number="285" hits="1"/>
-            <line number="287" hits="1"/>
-            <line number="292" hits="0"/>
+            <line number="285" hits="0"/>
+            <line number="287" hits="0"/>
+            <line number="292" hits="1"/>
             <line number="293" hits="0"/>
             <line number="296" hits="0"/>
             <line number="298" hits="0"/>

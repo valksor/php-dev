@@ -459,7 +459,7 @@ final class TailwindService extends AbstractService
             }
         }
 
-        $watcher = new RecursiveInotifyWatcher($this->filter, function (string $path) use (&$pending, &$debounceDeadline, $outputPaths, $rootToSources): void {
+        $watcher = new RecursiveInotifyWatcher($this->filter, static function (string $path) use (&$pending, &$debounceDeadline, $outputPaths, $rootToSources): void {
             if (is_array($outputPaths) ? array_key_exists($path, $outputPaths) : isset($outputPaths[$path])) {
                 return;
             }

@@ -79,6 +79,7 @@ return new Config()
         'simple_to_complex_string_variable' => true,
         'single_line_empty_body' => false,
         'single_line_throw' => true,
+        'static_lambda' => false,
         'strict_comparison' => true,
         'strict_param' => true,
         'trailing_comma_in_multiline' => ['elements' => ['arrays', 'arguments', 'parameters', 'match', ], ],
