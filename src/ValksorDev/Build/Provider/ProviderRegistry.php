@@ -121,8 +121,8 @@ final class ProviderRegistry
      *     ]
      * ]
      *
-     * @param array  $servicesConfig Services configuration from valksor.php config file
-     * @param string $flag           The flag to filter by ('init', 'dev', or 'prod')
+     * @param array<string, array<string, mixed>> $servicesConfig Services configuration from valksor.php config file
+     * @param string                              $flag           The flag to filter by ('init', 'dev', or 'prod')
      *
      * @return array<string, ProviderInterface> Filtered and sorted providers [service_name => provider]
      */
@@ -186,7 +186,7 @@ final class ProviderRegistry
     /**
      * Validate that all configured providers exist.
      *
-     * @param array $servicesConfig Services configuration from valksor.php
+     * @param array<string, array<string, mixed>> $servicesConfig Services configuration from valksor.php
      *
      * @return array<string> Array of missing provider names
      */

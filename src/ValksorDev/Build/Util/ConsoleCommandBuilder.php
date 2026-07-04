@@ -31,14 +31,14 @@ final class ConsoleCommandBuilder
     /**
      * Build a console command process with options or arguments.
      *
-     * @param string $command The console command (e.g., 'valksor:tailwind' or 'assets:install')
-     * @param array  $options Command options:
-     *                        For valksor commands:
-     *                        - 'app' (string): Application ID for multi-app setup
-     *                        - 'minify' (bool): Whether to add minification flag
-     *                        - 'watch' (bool): Whether to add watch flag
-     *                        For generic commands:
-     *                        - Array of command-line arguments (e.g., ['--relative', '--no-interaction'])
+     * @param string                  $command The console command (e.g., 'valksor:tailwind' or 'assets:install')
+     * @param array<array-key, mixed> $options Command options:
+     *                                         For valksor commands:
+     *                                         - 'app' (string): Application ID for multi-app setup
+     *                                         - 'minify' (bool): Whether to add minification flag
+     *                                         - 'watch' (bool): Whether to add watch flag
+     *                                         For generic commands:
+     *                                         - Array of command-line arguments (e.g., ['--relative', '--no-interaction'])
      *
      * @return Process The configured process ready to run
      */
@@ -78,8 +78,8 @@ final class ConsoleCommandBuilder
     /**
      * Build command arguments array for use with ProcessManager::executeProcess().
      *
-     * @param string $command The console command (e.g., 'valksor:tailwind')
-     * @param array  $options Command options (same as build())
+     * @param string               $command The console command (e.g., 'valksor:tailwind')
+     * @param array<string, mixed> $options Command options (same as build())
      *
      * @return array<string> Command arguments excluding 'php bin/console'
      */

@@ -27,7 +27,7 @@ interface ProviderInterface
      * Production build phase.
      * Used for building assets, minifying files, etc.
      *
-     * @param array $options Service-specific options from configuration
+     * @param array<string, mixed> $options Service-specific options from configuration
      *
      * @return int Exit code (0 for success, non-zero for error)
      */
@@ -39,7 +39,7 @@ interface ProviderInterface
      * Services that must run before this one.
      * Used for dependency resolution.
      *
-     * @return array Array of service names that must run first
+     * @return list<string> Array of service names that must run first
      */
     public function getDependencies(): array;
 
@@ -62,7 +62,7 @@ interface ProviderInterface
      * Initialize phase - runs before all other phases.
      * Used for one-time setup like downloading binaries, generating templates, etc.
      *
-     * @param array $options Service-specific options from configuration
+     * @param array<string, mixed> $options Service-specific options from configuration
      */
     public function init(
         array $options,
@@ -72,7 +72,7 @@ interface ProviderInterface
      * Development/watch phase.
      * Used for starting long-running development processes with file watching.
      *
-     * @param array $options Service-specific options from configuration
+     * @param array<string, mixed> $options Service-specific options from configuration
      *
      * @return int Exit code (0 for success, non-zero for error)
      */

@@ -272,7 +272,9 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
-     * @return array<string,array<int,string>>
+     * @param array<string> $sharedIcons
+     *
+     * @return array<string, array<string>>
      */
     private function collectAppIcons(
         array $sharedIcons,
@@ -326,9 +328,11 @@ final class IconsGenerateCommand extends AbstractCommand
     }
 
     /**
-     * @param array<string,array<int,string>> $appIcons
+     * @param string|null                  $targetArgument
+     * @param array<string>                $sharedIcons
+     * @param array<string, array<string>> $appIcons
      *
-     * @return array<string,array<int,string>>
+     * @return array<string, array<string>>
      */
     private function determineTargets(
         $targetArgument,
@@ -658,6 +662,8 @@ final class IconsGenerateCommand extends AbstractCommand
 
     /**
      * Locate FontAwesome icon files using configured path.
+     *
+     * @param array{type: string, style: string, name: string} $parsed
      */
     private function locateFontAwesomeIcon(
         array $parsed,
@@ -725,6 +731,8 @@ final class IconsGenerateCommand extends AbstractCommand
 
     /**
      * Parse FontAwesome icon name format: fa-<type>-<icon>.
+     *
+     * @return array{type: string, style: string, name: string}|null
      */
     private function parseIconName(
         string $icon,
@@ -754,6 +762,9 @@ final class IconsGenerateCommand extends AbstractCommand
         ];
     }
 
+    /**
+     * @return array<string>
+     */
     private function readJsonList(
         string $path,
     ): array {
@@ -981,6 +992,8 @@ final class IconsGenerateCommand extends AbstractCommand
 
     /**
      * Write duotone icon with special CSS class handling.
+     *
+     * @param array{type: string, style: string, name: string} $parsed
      */
     private function writeDuotoneTwigIcon(
         string $icon,
@@ -1021,6 +1034,8 @@ final class IconsGenerateCommand extends AbstractCommand
 
     /**
      * Write FontAwesome icon with proper processing.
+     *
+     * @param array{type: string, style: string, name: string} $parsed
      */
     private function writeFontAwesomeTwigIcon(
         string $icon,

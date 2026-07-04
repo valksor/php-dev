@@ -207,6 +207,9 @@ final class RecursiveInotifyWatcher
         $this->registerDirectoryRecursively($real);
     }
 
+    /**
+     * @return resource
+     */
     public function getStream()
     {
         return $this->inotify;
@@ -271,7 +274,7 @@ final class RecursiveInotifyWatcher
     private function handleEvent(
         array $event,
     ): void {
-        $watchDescriptor = $event['wd'] ?? null;
+        $watchDescriptor = $event['wd'];
 
         // Validate that we know about this watch descriptor
         // This can happen if the watch was removed but events are still pending

@@ -81,7 +81,7 @@ readonly class GenericNpmBinaryProvider implements BinaryInterface
         }
 
         // Use requested name if provided and it's in our packages, otherwise use first package
-        $packageData = $this->packages[0] ?? null;
+        $packageData = $this->packages[0];
         $package = $packageData['package'];
         $tag = $packageData['tag'];
 

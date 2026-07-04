@@ -21,6 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use ValksorDev\Build\Binary\BinaryRegistry;
+use ValksorDev\Build\Binary\GenericNpmBinaryProvider;
 use ValksorDev\Build\Provider\ProviderRegistry;
 
 use function count;
@@ -29,6 +30,9 @@ use function sprintf;
 #[AsCommand(name: 'valksor:binaries:install', description: 'Install all required binaries.')]
 final class BinaryInstallCommand extends AbstractCommand
 {
+    /**
+     * @param array<string, mixed> $servicesConfig
+     */
     public function __construct(
         ParameterBagInterface $parameterParameterBag,
         private readonly BinaryRegistry $binaryRegistry,
@@ -86,7 +90,7 @@ final class BinaryInstallCommand extends AbstractCommand
         // Check for and install Generic NPM packages
         $genericProvider = $this->binaryRegistry->getGenericNpmProvider();
 
-        if ($genericProvider && $genericProvider->getPackageCount() > 0) {
+        if ($genericProvider instanceof GenericNpmBinaryProvider && $genericProvider->getPackageCount() > 0) {
             $io->section('Installing Generic NPM Packages');
 
             try {

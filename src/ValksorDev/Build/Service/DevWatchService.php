@@ -401,6 +401,8 @@ final class DevWatchService
 
     /**
      * Run a single provider with error handling.
+     *
+     * @param array<string,mixed> $options
      */
     private function runProvider(
         string $name,
@@ -476,6 +478,7 @@ final class DevWatchService
         }
 
         // Final verification - ensure the process is still running
+        // @phpstan-ignore-next-line if.alwaysTrue (isRunning() is impure; re-checked to catch a process that died since the loop broke)
         if ($process->isRunning()) {
             // Register SSE process with ProcessManager for monitoring and restart
             $this->processManager->addProcess('sse', $process);
@@ -483,6 +486,7 @@ final class DevWatchService
             return Command::SUCCESS;
         }
 
+        // @phpstan-ignore-next-line deadCode.unreachable (reachable at runtime when the process has stopped)
         return Command::FAILURE;
     }
 
@@ -500,6 +504,8 @@ final class DevWatchService
 
     /**
      * Start a provider process and return the Process object for tracking.
+     *
+     * @param array<string,mixed> $options
      */
     private function startProviderProcess(
         string $name,

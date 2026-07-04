@@ -123,7 +123,6 @@ class BuildConfiguration extends AbstractDependencyConfiguration
                                         ->info('Service-specific configuration options')
                                         ->example([
                                             // Tailwind CSS service options
-                                            'minify' => true,
                                             'watch' => false,
 
                                             // Importmap service options

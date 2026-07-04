@@ -30,6 +30,11 @@ use const SCANDIR_SORT_ASCENDING;
  */
 final class ImportmapProvider implements ProviderInterface, IoAwareInterface
 {
+    /**
+     * Written via setIo() to satisfy the IoAwareInterface contract; not read in this provider.
+     *
+     * @phpstan-ignore property.onlyWritten
+     */
     private ?SymfonyStyle $io = null;
 
     public function __construct(

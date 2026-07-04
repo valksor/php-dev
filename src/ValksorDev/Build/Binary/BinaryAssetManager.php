@@ -160,6 +160,8 @@ final class BinaryAssetManager
 
     /**
      * Factory method from custom tool definition array.
+     *
+     * @param array<string, mixed> $definition
      */
     public static function createFromDefinition(
         array $definition,
@@ -420,6 +422,8 @@ final class BinaryAssetManager
 
     /**
      * Extract HTTP status code from response headers.
+     *
+     * @param list<string> $headers
      */
     private function extractHttpStatusCode(
         array $headers,
@@ -762,6 +766,10 @@ final class BinaryAssetManager
 
     /**
      * Parse rate limit information from response headers.
+     *
+     * @param list<string> $headers
+     *
+     * @return array{limit: int|null, remaining: int|null, reset: int|null}
      */
     private function parseRateLimitHeaders(
         array $headers,

@@ -42,7 +42,7 @@ final readonly class TailwindBinary implements BinaryInterface
         string $targetDir,
         ?ParameterBagInterface $parameterBag = null,
     ): BinaryAssetManager {
-        $platform ??= BinaryAssetManager::detectPlatform();
+        $platform = BinaryAssetManager::detectPlatform();
 
         $config = [
             'name' => 'Tailwind CSS',

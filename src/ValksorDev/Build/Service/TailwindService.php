@@ -29,7 +29,6 @@ use function closedir;
 use function count;
 use function dirname;
 use function function_exists;
-use function is_array;
 use function is_dir;
 use function is_executable;
 use function is_file;
@@ -340,13 +339,19 @@ final class TailwindService extends AbstractService
             $watchRoots[] = dirname($inputPath);
         }
 
+        // ParameterBagInterface::get() has a union return type, so the concatenated
+        // watch-root strings are inferred as an error type; pin them back to strings
+        // before array_values() so the template type can be resolved.
+        /** @var array<int, string> $uniqueWatchRoots */
+        $uniqueWatchRoots = array_unique($watchRoots);
+
         return [
             'input' => $inputPath,
             'output' => $outputPath,
             'relative_input' => $relativeInput,
             'relative_output' => $relativeOutput,
             'label' => $label,
-            'watchRoots' => array_values(array_unique($watchRoots)),
+            'watchRoots' => array_values($uniqueWatchRoots),
         ];
     }
 
@@ -406,10 +411,9 @@ final class TailwindService extends AbstractService
     }
 
     /**
-     * Get search roots for single-app projects
-     * Can be customized via ASSET_ROOTS environment variable or injected watch directories.
+     * Resolve the Tailwind CLI command base.
      *
-     * @return array<int,string>
+     * @return array{command: array<int,string>, display: string}
      */
     private function resolveTailwindCommandBase(): array
     {
@@ -460,7 +464,7 @@ final class TailwindService extends AbstractService
         }
 
         $watcher = new RecursiveInotifyWatcher($this->filter, static function (string $path) use (&$pending, &$debounceDeadline, $outputPaths, $rootToSources): void {
-            if (is_array($outputPaths) ? array_key_exists($path, $outputPaths) : isset($outputPaths[$path])) {
+            if (array_key_exists($path, $outputPaths)) {
                 return;
             }
 
@@ -491,6 +495,10 @@ final class TailwindService extends AbstractService
             $this->reload();
         });
 
+        // $running and $shouldShutdown are mutated asynchronously by the pcntl signal
+        // handlers registered above (SIGINT/SIGTERM -> stop(), SIGHUP -> reload()).
+        // PHPStan cannot observe those callbacks, so it wrongly treats the loop as infinite.
+        // @phpstan-ignore booleanAnd.leftAlwaysTrue, booleanNot.alwaysTrue
         while ($this->running && !$this->shouldShutdown) {
             $stream = $watcher->getStream();
             $read = [$stream];
@@ -503,6 +511,7 @@ final class TailwindService extends AbstractService
             }
             $watcher->poll();
 
+            // @phpstan-ignore if.alwaysFalse (shouldReload is set by the SIGHUP signal handler)
             if ($this->shouldReload) {
                 $this->io->newLine();
                 $this->io->section('Reloading Tailwind build...');
@@ -526,6 +535,7 @@ final class TailwindService extends AbstractService
             }
         }
 
+        // @phpstan-ignore deadCode.unreachable (loop exits once a signal handler clears the flags)
         $this->io->newLine();
         $this->io->success('Tailwind watch terminated.');
 

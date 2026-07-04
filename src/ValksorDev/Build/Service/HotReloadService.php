@@ -219,7 +219,7 @@ final class HotReloadService extends AbstractService
                         continue;
                     }
 
-                    if (!empty($read)) {
+                    if ($ready > 0) {
                         $watcher->poll();
                     }
 
@@ -260,6 +260,10 @@ final class HotReloadService extends AbstractService
 
     /**
      * Categorize an exclude pattern into the appropriate filter type.
+     *
+     * @param list<string> $dirs
+     * @param list<string> $globs
+     * @param list<string> $extensions
      */
     private function categorizeExcludePattern(
         string $pattern,
@@ -300,6 +304,8 @@ final class HotReloadService extends AbstractService
     }
 
     /**
+     * @param list<string> $watchDirs
+     *
      * @return array<int,string>
      */
     private function collectWatchTargets(
@@ -321,6 +327,8 @@ final class HotReloadService extends AbstractService
 
     /**
      * Create a PathFilter that merges default exclusions with custom exclude patterns.
+     *
+     * @param list<string> $excludePatterns
      */
     private function createPathFilterWithExclusions(
         array $excludePatterns = [],
@@ -362,6 +370,10 @@ final class HotReloadService extends AbstractService
         return new PathFilter($allPatterns, $this->projectDir);
     }
 
+    /**
+     * @param array<string,float> $extendedExtensions
+     * @param array<string,float> $extendedSuffixes
+     */
     private function determineReloadDelay(
         string $path,
         array $extendedExtensions,
@@ -432,6 +444,8 @@ final class HotReloadService extends AbstractService
 
     /**
      * Extract default exclusions from PathFilter using compatibility methods.
+     *
+     * @return array{directories: array<string>, globs: array<string>, filenames: array<string>, extensions: array<string>}
      */
     private function extractDefaultExclusions(
         PathFilter $filter,
@@ -502,6 +516,10 @@ final class HotReloadService extends AbstractService
         return $projectRoot . DIRECTORY_SEPARATOR . $outputPath;
     }
 
+    /**
+     * @param array<string,float> $extendedSuffixes
+     * @param array<string,float> $extendedExtensions
+     */
     private function handleFilesystemChange(
         string $path,
         array $extendedSuffixes,
@@ -590,6 +608,8 @@ final class HotReloadService extends AbstractService
 
     /**
      * Validate hot reload configuration before starting.
+     *
+     * @param array<string,mixed> $config
      */
     private function validateConfiguration(
         array $config,

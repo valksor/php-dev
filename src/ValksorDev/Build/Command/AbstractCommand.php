@@ -22,6 +22,7 @@ use Symfony\Component\Process\Process;
 use Valksor\Bundle\Command\AbstractCommand as BundleAbstractCommand;
 use Valksor\Component\Sse\Helper;
 use ValksorDev\Build\Provider\IoAwareInterface;
+use ValksorDev\Build\Provider\ProviderInterface;
 use ValksorDev\Build\Provider\ProviderRegistry;
 use ValksorDev\Build\Util\ConsoleCommandBuilder;
 
@@ -189,6 +190,9 @@ abstract class AbstractCommand extends BundleAbstractCommand
 
     /**
      * Run a single provider with error handling.
+     *
+     * @param ProviderInterface    $provider
+     * @param array<string, mixed> $options
      */
     protected function runProvider(
         string $name,
@@ -243,8 +247,9 @@ abstract class AbstractCommand extends BundleAbstractCommand
             }
         }
 
-        // Final check - is the process still running successfully?
-        return $process->isRunning() ? Command::SUCCESS : Command::FAILURE;
+        // Final check - the loop only exits via break while the process is
+        // still running, so at this point the process is always running.
+        return Command::SUCCESS;
     }
 
     /**

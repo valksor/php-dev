@@ -36,7 +36,6 @@ use function count;
 use function dirname;
 use function file_exists;
 use function function_exists;
-use function is_array;
 use function is_dir;
 use function is_file;
 use function opendir;
@@ -361,7 +360,7 @@ final class ImportmapService extends AbstractService
             $rootPath = $root['source'];
             $rootMetadata[$rootPath] = $root;
 
-            if (!is_array($rootToModules) ? array_key_exists($rootPath, $rootToModules) : isset($rootToModules[$rootPath])) {
+            if (isset($rootToModules[$rootPath])) {
                 $rootToModules[$rootPath] = [];
             }
 
@@ -372,7 +371,7 @@ final class ImportmapService extends AbstractService
         }
 
         $watcher = new RecursiveInotifyWatcher($this->filter, function (string $path) use (&$rootToModules, &$outputMap, $rootMetadata, $esbuild, $minify): void {
-            if (is_array($outputMap) ? array_key_exists($path, $outputMap) : isset($outputMap[$path])) {
+            if (array_key_exists($path, $outputMap)) {
                 return; // ignore writes to dist
             }
 

@@ -12,12 +12,10 @@
 
 namespace ValksorDev\Build\Service;
 
-use JetBrains\PhpStorm\NoReturn;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
-use ValksorDev\Build\Util\ConsoleCommandBuilder;
 
 use function array_filter;
 use function array_merge;
@@ -134,7 +132,6 @@ final class ProcessManager
 
     public function __construct(
         private readonly ?SymfonyStyle $io = null,
-        private readonly ?ConsoleCommandBuilder $commandBuilder = null,
     ) {
         // Register signal handlers for graceful shutdown
         if (function_exists('pcntl_signal')) {
@@ -256,9 +253,9 @@ final class ProcessManager
      * - Non-interactive mode: Runs process to completion and returns exit code
      * - Timeout handling: Manages processes that are expected to run indefinitely
      *
-     * @param array  $arguments     Command arguments to pass to the console
-     * @param bool   $isInteractive Whether to run in interactive (background) mode
-     * @param string $serviceName   Name of the service for logging and user feedback
+     * @param list<string> $arguments     Command arguments to pass to the console
+     * @param bool         $isInteractive Whether to run in interactive (background) mode
+     * @param string       $serviceName   Name of the service for logging and user feedback
      *
      * @return int Command exit code (Command::SUCCESS or Command::FAILURE)
      */
@@ -401,7 +398,7 @@ final class ProcessManager
         $current = $processName;
         $visited = [];
 
-        while (null !== $current && !isset($visited[$current])) {
+        while (!isset($visited[$current])) {
             $visited[$current] = true;
             $parent = $this->processParents[$current] ?? null;
 
@@ -445,7 +442,6 @@ final class ProcessManager
      *
      * @return void This method terminates the process
      */
-    #[NoReturn]
     public function handleSignal(
         int $signal,
     ): void {
@@ -700,6 +696,7 @@ final class ProcessManager
         $process->stop(2); // Send SIGTERM with 2-second timeout for graceful shutdown
 
         // Phase 2: Force kill if still running using SIGKILL (signal 9)
+        // @phpstan-ignore-next-line if.alwaysTrue (isRunning() is impure; may be false here after stop() terminated the process)
         if ($process->isRunning()) {
             $this->io?->warning(sprintf('[FORCE-KILL] Forcefully killing %s process', $processName));
             $process->signal(9); // SIGKILL - cannot be caught or ignored

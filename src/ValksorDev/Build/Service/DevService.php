@@ -430,6 +430,8 @@ final class DevService
 
     /**
      * Run a single provider with error handling.
+     *
+     * @param array<string,mixed> $options
      */
     private function runProvider(
         string $name,
@@ -486,6 +488,7 @@ final class DevService
         }
 
         // Final check - is the process still running successfully?
+        // @phpstan-ignore-next-line if.alwaysTrue (isRunning() is impure; re-checked to catch a process that died since the loop broke)
         if ($process->isRunning()) {
             // Register SSE process with ProcessManager for monitoring and restart
             $this->processManager->addProcess('sse', $process);
@@ -493,6 +496,7 @@ final class DevService
             return Command::SUCCESS;
         }
 
+        // @phpstan-ignore-next-line deadCode.unreachable (reachable at runtime when the process has stopped)
         return Command::FAILURE;
     }
 
@@ -526,9 +530,9 @@ final class DevService
      * The process startup includes verification to ensure the service
      * started successfully before adding it to the process manager.
      *
-     * @param string $name     Service name (e.g., 'hot_reload')
-     * @param object $provider Service provider instance
-     * @param array  $options  Service-specific configuration options
+     * @param string              $name     Service name (e.g., 'hot_reload')
+     * @param object              $provider Service provider instance
+     * @param array<string,mixed> $options  Service-specific configuration options
      *
      * @return Process|null Process object for tracking, or null if startup failed
      */

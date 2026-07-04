@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use ValksorDev\Build\Provider\IoAwareInterface;
+use ValksorDev\Build\Provider\ProviderInterface;
 
 use function count;
 use function implode;
@@ -112,6 +113,9 @@ final class ProdBuildCommand extends AbstractCommand
 
     /**
      * Run a single provider with error handling.
+     *
+     * @param ProviderInterface    $provider
+     * @param array<string, mixed> $options
      */
     protected function runProvider(
         string $name,
