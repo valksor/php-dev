@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage line-rate="0.2677304964539" branch-rate="0" lines-covered="755" lines-valid="2820" branches-covered="0" branches-valid="0" complexity="1025" version="0.4" timestamp="0">
+<coverage line-rate="0.26808510638298" branch-rate="0" lines-covered="756" lines-valid="2820" branches-covered="0" branches-valid="0" complexity="1025" version="0.4" timestamp="0">
   <sources>
     <source>/var/www/html/valksor-dev/src/ValksorDev/Build</source>
   </sources>
@@ -5812,9 +5812,9 @@
         </class>
       </classes>
     </package>
-    <package name="Service/ProcessManager.php" line-rate="0.3015873015873" branch-rate="0" complexity="77">
+    <package name="Service/ProcessManager.php" line-rate="0.30687830687831" branch-rate="0" complexity="77">
       <classes>
-        <class name="ValksorDev\Build\Service\ProcessManager" filename="Service/ProcessManager.php" line-rate="0.3015873015873" branch-rate="0" complexity="77">
+        <class name="ValksorDev\Build\Service\ProcessManager" filename="Service/ProcessManager.php" line-rate="0.30687830687831" branch-rate="0" complexity="77">
           <methods>
             <method name="__construct" signature="?SymfonyStyle $io" line-rate="1" branch-rate="0" complexity="2">
               <lines>
@@ -5882,16 +5882,16 @@
                 <line number="245" hits="0"/>
               </lines>
             </method>
-            <method name="executeProcess" signature="array $arguments, bool $isInteractive, string $serviceName" line-rate="0.42857142857143" branch-rate="0" complexity="8">
+            <method name="executeProcess" signature="array $arguments, bool $isInteractive, string $serviceName" line-rate="0.5" branch-rate="0" complexity="8">
               <lines>
                 <line number="267" hits="1"/>
                 <line number="269" hits="1"/>
                 <line number="274" hits="1"/>
                 <line number="277" hits="1"/>
                 <line number="279" hits="1"/>
-                <line number="282" hits="0"/>
-                <line number="284" hits="0"/>
-                <line number="289" hits="1"/>
+                <line number="282" hits="1"/>
+                <line number="284" hits="1"/>
+                <line number="289" hits="0"/>
                 <line number="290" hits="0"/>
                 <line number="293" hits="0"/>
                 <line number="295" hits="0"/>
@@ -6170,9 +6170,9 @@
             <line number="274" hits="1"/>
             <line number="277" hits="1"/>
             <line number="279" hits="1"/>
-            <line number="282" hits="0"/>
-            <line number="284" hits="0"/>
-            <line number="289" hits="1"/>
+            <line number="282" hits="1"/>
+            <line number="284" hits="1"/>
+            <line number="289" hits="0"/>
             <line number="290" hits="0"/>
             <line number="293" hits="0"/>
             <line number="295" hits="0"/>
