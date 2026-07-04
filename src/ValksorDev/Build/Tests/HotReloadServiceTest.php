@@ -260,7 +260,7 @@ final class HotReloadServiceTest extends TestCase
         ]);
 
         // Create comprehensive mock for SymfonyStyle IO
-        $this->mockIo = $this->createMock(SymfonyStyle::class);
+        $this->mockIo = $this->createStub(SymfonyStyle::class);
         $this->mockIo->method('warning')->willReturnSelf();
         $this->mockIo->method('text')->willReturnSelf();
         $this->mockIo->method('success')->willReturnSelf();
