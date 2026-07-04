@@ -15,7 +15,6 @@ namespace ValksorDev\PhpCsFixerCustomFixers\Fixer;
 use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
-use Valksor\Functions\Preg;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\AbstractFixer;
 
 use function assert;
@@ -74,16 +73,8 @@ final class DeclareAfterOpeningTagFixer extends AbstractFixer
             $tokensToInsert[] = new Token([T_WHITESPACE, substr($openingTagTokenContent, 5)]);
         }
 
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Replace;
-            };
-        }
-
         if ($tokens[$semicolonIndex + 1]->isGivenKind(T_WHITESPACE)) {
-            $content = $_helper->replace('/^(\\R?)(?=\\R)/', '', $tokens[$semicolonIndex + 1]->getContent());
+            $content = self::preg()->replace('/^(\\R?)(?=\\R)/', '', $tokens[$semicolonIndex + 1]->getContent());
 
             $tokens->ensureWhitespaceAtIndex($semicolonIndex + 1, 0, $content);
         }

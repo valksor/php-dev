@@ -80,6 +80,9 @@ final class NoUselessDirnameCallFixer extends AbstractFixer
         return $tokens->isTokenKindFound(T_DIR);
     }
 
+    /**
+     * @return array<int, string>|null
+     */
     private function getNextTokensUpdates(
         Tokens $tokens,
         int $index,
@@ -135,6 +138,9 @@ final class NoUselessDirnameCallFixer extends AbstractFixer
         return $updates;
     }
 
+    /**
+     * @return array<int, string>|null
+     */
     private function getPrevTokensUpdates(
         Tokens $tokens,
         int $index,

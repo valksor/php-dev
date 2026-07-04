@@ -23,7 +23,6 @@ use function array_key_first;
 use function array_keys;
 use function array_pad;
 use function array_slice;
-use function assert;
 use function count;
 use function explode;
 use function implode;
@@ -130,9 +129,9 @@ final class LineBreakBetweenStatementsFixer extends AbstractFixer
             return;
         }
 
-        assert(null !== $nextMeaningful);
+        $nextId = $tokens[$nextMeaningful]->getId();
 
-        if (!array_key_exists($tokens[$nextMeaningful]->getId(), self::HANDLERS)) {
+        if (null === $nextId || !array_key_exists($nextId, self::HANDLERS)) {
             return;
         }
 
@@ -140,6 +139,8 @@ final class LineBreakBetweenStatementsFixer extends AbstractFixer
     }
 
     /**
+     * @param array<int, Token> $matchedTokens
+     *
      * @throws Exception
      */
     private function handleCommon(
@@ -171,6 +172,8 @@ final class LineBreakBetweenStatementsFixer extends AbstractFixer
     }
 
     /**
+     * @param array<int, Token> $matchedTokens
+     *
      * @throws Exception
      */
     private function handleDo(

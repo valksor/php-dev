@@ -106,6 +106,9 @@ final class NoUselessStrlenFixer extends AbstractFixer
         return true;
     }
 
+    /**
+     * @param array<int, int> $tokensToRemove
+     */
     private function removeTokenAndSiblingWhitespace(
         Tokens $tokens,
         array $tokensToRemove,

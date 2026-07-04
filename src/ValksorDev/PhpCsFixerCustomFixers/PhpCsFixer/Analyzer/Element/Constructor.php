@@ -41,6 +41,9 @@ final readonly class Constructor
         return $this->constructorIndex;
     }
 
+    /**
+     * @return list<string>
+     */
     public function getConstructorParameterNames(): array
     {
         $openParenthesis = $this->tokens->getNextTokenOfKind($this->constructorIndex, ['(']);
@@ -60,6 +63,9 @@ final readonly class Constructor
         return $constructorParameterNames;
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function getConstructorPromotableAssignments(): array
     {
         $openParenthesis = $this->tokens->getNextTokenOfKind($this->constructorIndex, ['(']);
@@ -108,6 +114,9 @@ final readonly class Constructor
         return array_flip($variables);
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getConstructorPromotableParameters(): array
     {
         $openParenthesis = $this->tokens->getNextTokenOfKind($this->constructorIndex, ['(']);
@@ -150,6 +159,11 @@ final readonly class Constructor
         return $constructorPromotableParameters;
     }
 
+    /**
+     * @param array<int, string> $array
+     *
+     * @return array<int, int>
+     */
     private function getDuplicatesIndices(
         array $array,
     ): array {

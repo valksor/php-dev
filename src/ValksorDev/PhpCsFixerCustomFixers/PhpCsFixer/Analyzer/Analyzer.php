@@ -20,6 +20,7 @@ use Valksor\Functions\Preg;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer\Element\CaseElement;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer\Element\Constructor;
 use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer\Element\SwitchElement;
+use ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Exception\TokenAnalysisException;
 
 use function assert;
 use function call_user_func_array;
@@ -28,9 +29,9 @@ use function current;
 use function end;
 use function explode;
 use function is_array;
-use function is_bool;
 use function is_int;
 use function mb_strlen;
+use function method_exists;
 use function sprintf;
 
 use const T_CASE;
@@ -53,10 +54,17 @@ final class Analyzer
         $this->analyzer = new TokensAnalyzer($tokens);
     }
 
+    /**
+     * @param array<int, mixed> $arguments
+     */
     public function __call(
         string $name,
         array $arguments,
     ): mixed {
+        if (!method_exists($this->analyzer, $name)) {
+            throw new TokenAnalysisException(sprintf('Method "%s" does not exist on %s.', $name, TokensAnalyzer::class));
+        }
+
         return call_user_func_array([$this->analyzer, $name], $arguments);
     }
 
@@ -146,16 +154,12 @@ final class Analyzer
         $token = $this->tokens[$start];
         $parts = explode("\n", $token->getContent());
 
-        $result = end($parts);
-
-        if (!is_bool($result)) {
-            return (string) $result;
-        }
-
-        return '';
+        return end($parts);
     }
 
     /**
+     * @return array<int, array{type: string|null, name: string, nullable: bool, asDefault: bool}>
+     *
      * @throws Exception
      */
     public function getMethodArguments(
@@ -298,6 +302,8 @@ final class Analyzer
     }
 
     /**
+     * @param string|int|list<string> $openingToken
+     *
      * @throws Exception
      */
     private function findBlockEndMatchingOpeningToken(
@@ -412,6 +418,9 @@ final class Analyzer
         return $index;
     }
 
+    /**
+     * @param array<string, mixed> $element
+     */
     private function isConstructor(
         int $index,
         array $element,

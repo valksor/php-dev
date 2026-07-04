@@ -45,6 +45,9 @@ use const T_WHITESPACE;
 
 final class PromotedConstructorPropertyFixer extends AbstractFixer
 {
+    /**
+     * @var array<int, list<Token>>
+     */
     private array $tokensToInsert;
 
     public function applyFix(
@@ -98,6 +101,9 @@ final class PromotedConstructorPropertyFixer extends AbstractFixer
         return $tokens->isAllTokenKindsFound([T_CLASS, T_VARIABLE]);
     }
 
+    /**
+     * @return array<string, int>
+     */
     private function getClassProperties(
         Tokens $tokens,
         int $classIndex,
@@ -119,6 +125,9 @@ final class PromotedConstructorPropertyFixer extends AbstractFixer
         return $properties;
     }
 
+    /**
+     * @param array<string, int> $properties
+     */
     private function getPropertyIndex(
         Tokens $tokens,
         array $properties,
@@ -140,6 +149,9 @@ final class PromotedConstructorPropertyFixer extends AbstractFixer
         return null;
     }
 
+    /**
+     * @param list<string> $tokenKinds
+     */
     private function getTokenOfKindSibling(
         Tokens $tokens,
         int $direction,
@@ -312,6 +324,9 @@ final class PromotedConstructorPropertyFixer extends AbstractFixer
         self::removeWithLinesIfPossible($tokens, $thisIndex);
     }
 
+    /**
+     * @return list<Token>
+     */
     private function removePropertyAndReturnTokensToInsert(
         Tokens $tokens,
         ?int $propertyIndex,
@@ -397,6 +412,9 @@ final class PromotedConstructorPropertyFixer extends AbstractFixer
         return strtolower($propertyType) === strtolower($parameterType);
     }
 
+    /**
+     * @param list<Token> $tokensToInsert
+     */
     private function updateParameterSignature(
         Tokens $tokens,
         int $constructorParameterIndex,

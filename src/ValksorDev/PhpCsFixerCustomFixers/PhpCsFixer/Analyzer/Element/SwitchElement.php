@@ -17,6 +17,9 @@ namespace ValksorDev\PhpCsFixerCustomFixers\PhpCsFixer\Analyzer\Element;
  */
 final readonly class SwitchElement
 {
+    /**
+     * @param list<CaseElement> $cases
+     */
     public function __construct(
         private int $casesStart,
         private int $casesEnd,
@@ -24,6 +27,9 @@ final readonly class SwitchElement
     ) {
     }
 
+    /**
+     * @return list<CaseElement>
+     */
     public function getCases(): array
     {
         return $this->cases;

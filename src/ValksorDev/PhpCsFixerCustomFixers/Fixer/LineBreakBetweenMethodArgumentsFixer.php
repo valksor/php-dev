@@ -13,6 +13,7 @@
 namespace ValksorDev\PhpCsFixerCustomFixers\Fixer;
 
 use Exception;
+use PhpCsFixer\Tokenizer\CT;
 use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 use SplFileInfo;
@@ -30,8 +31,6 @@ use const T_WHITESPACE;
 
 final class LineBreakBetweenMethodArgumentsFixer extends AbstractFixer
 {
-    public const int T_TYPEHINT_SEMI_COLON = 10025;
-
     public function getDocumentation(): string
     {
         return 'Move function arguments to separate lines (one argument per line)';
@@ -76,11 +75,12 @@ final class LineBreakBetweenMethodArgumentsFixer extends AbstractFixer
 
         foreach (array_reverse($functions, true) as $index => $token) {
             $nextIndex = $tokens->getNextMeaningfulToken($index);
-            $next = $tokens[$nextIndex];
 
             if (null === $nextIndex) {
                 continue;
             }
+
+            $next = $tokens[$nextIndex];
 
             if (T_STRING !== $next->getId()) {
                 continue;
@@ -162,7 +162,7 @@ final class LineBreakBetweenMethodArgumentsFixer extends AbstractFixer
             $tokens->ensureWhitespaceAtIndex($closeBraceIndex, 1, ' ');
         }
 
-        if ($tokens[$tokens->getNextMeaningfulToken($closeBraceIndex)]->isGivenKind(self::T_TYPEHINT_SEMI_COLON)) {
+        if ($tokens[$tokens->getNextMeaningfulToken($closeBraceIndex)]->isGivenKind(CT::T_TYPE_COLON)) {
             $end = $tokens->getNextTokenOfKind($closeBraceIndex, [';', '{']);
 
             $tokens->removeLeadingWhitespace($end);

@@ -17,6 +17,7 @@ use PhpCsFixer\Fixer\WhitespacesAwareFixerInterface;
 use PhpCsFixer\FixerDefinition\CodeSample;
 use PhpCsFixer\FixerDefinition\FixerDefinition;
 use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
+use PhpCsFixer\Tokenizer\Token;
 use PhpCsFixer\Tokenizer\Tokens;
 use PhpCsFixer\WhitespacesFixerConfig;
 use SplFileInfo;
@@ -149,6 +150,9 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
         return new Analyzer($tokens);
     }
 
+    /**
+     * @param list<string>|string $fqcn
+     */
     protected function extendsClass(
         Tokens $tokens,
         array|string $fqcn,
@@ -164,12 +168,20 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
             ]);
     }
 
+    /**
+     * @return array<int, Token>
+     */
     protected function getComments(
         Tokens $tokens,
     ): array {
         return array_filter($tokens->toArray(), static fn ($token) => $token->isComment());
     }
 
+    /**
+     * @param list<string>|string $fqcn
+     *
+     * @return array<int, Token>|null
+     */
     protected function getUseStatements(
         Tokens $tokens,
         array|string $fqcn,
@@ -186,6 +198,9 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
         return $tokens->findSequence($sequence);
     }
 
+    /**
+     * @param list<string>|string $fqcn
+     */
     protected function hasUseStatements(
         Tokens $tokens,
         array|string $fqcn,
@@ -193,6 +208,9 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
         return null !== $this->getUseStatements($tokens, $fqcn);
     }
 
+    /**
+     * @param list<string>|string $fqcn
+     */
     protected function implementsInterface(
         Tokens $tokens,
         array|string $fqcn,
@@ -215,15 +233,7 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
     ): void {
         $pattern = $wasNewlineRemoved ? '/^\\h+/' : '/^\\h*\\R/';
 
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Replace;
-            };
-        }
-
-        $newContent = $_helper->replace($pattern, '', $tokens[$index]->getContent());
+        $newContent = self::preg()->replace($pattern, '', $tokens[$index]->getContent());
         $tokens->ensureWhitespaceAtIndex($index, 0, $newContent);
     }
 
@@ -235,16 +245,8 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
             return false;
         }
 
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Replace;
-            };
-        }
-
-        $withoutTrailingSpaces = $_helper->replace('/\\h+$/', '', $tokens[$index]->getContent());
-        $withoutNewline = $_helper->replace('/\\R$/', '', $withoutTrailingSpaces, 1);
+        $withoutTrailingSpaces = self::preg()->replace('/\\h+$/', '', $tokens[$index]->getContent());
+        $withoutNewline = self::preg()->replace('/\\R$/', '', $withoutTrailingSpaces, 1);
         $tokens->ensureWhitespaceAtIndex($index, 0, $withoutNewline);
 
         return $withoutTrailingSpaces !== $withoutNewline;
@@ -256,15 +258,7 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
     ): bool {
         $next = $tokens->getNonEmptySibling($index, 1);
 
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Match;
-            };
-        }
-
-        return null !== $next && (!$tokens[$next]->isGivenKind(T_WHITESPACE) || !$_helper->match('/\\R/', $tokens[$next]->getContent()));
+        return null !== $next && (!$tokens[$next]->isGivenKind(T_WHITESPACE) || !self::preg()->match('/\\R/', $tokens[$next]->getContent()));
     }
 
     protected static function hasMeaningTokenInLineBefore(
@@ -278,23 +272,15 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
             return true;
         }
 
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Match;
-            };
-        }
-
-        if ($tokens[$prev]->isGivenKind(T_OPEN_TAG) && !$_helper->match('/\\R$/', $tokens[$prev]->getContent())) {
+        if ($tokens[$prev]->isGivenKind(T_OPEN_TAG) && !self::preg()->match('/\\R$/', $tokens[$prev]->getContent())) {
             return true;
         }
 
-        if (!$_helper->match('/\\R/', $tokens[$prev]->getContent())) {
+        if (!self::preg()->match('/\\R/', $tokens[$prev]->getContent())) {
             $prevPrev = $tokens->getNonEmptySibling($prev, -1);
             assert(is_int($prevPrev));
 
-            if (!$tokens[$prevPrev]->isGivenKind(T_OPEN_TAG) || !$_helper->match('/\\R$/', $tokens[$prevPrev]->getContent())) {
+            if (!$tokens[$prevPrev]->isGivenKind(T_OPEN_TAG) || !self::preg()->match('/\\R$/', $tokens[$prevPrev]->getContent())) {
                 return true;
             }
         }
@@ -309,18 +295,20 @@ abstract class AbstractFixer implements FixerInterface, WhitespacesAwareFixerInt
         return !self::hasMeaningTokenInLineBefore($tokens, $index) && !self::hasMeaningTokenInLineAfter($tokens, $index);
     }
 
+    /**
+     * Shared UTF-8-safe preg helper (match/replace) reused across the fixers.
+     */
+    protected static function preg(): Preg\Functions
+    {
+        static $preg = null;
+
+        return $preg ??= new Preg\Functions();
+    }
+
     protected static function snakeCaseFromCamelCase(
         string $string,
         string $separator = '_',
     ): string {
-        static $_helper = null;
-
-        if (null === $_helper) {
-            $_helper = new class {
-                use Preg\Traits\_Replace;
-            };
-        }
-
-        return mb_strtolower(string: $_helper->replace(pattern: '#(?!^)[[:upper:]]+#', replacement: $separator . '$0', subject: $string));
+        return mb_strtolower(string: self::preg()->replace(pattern: '#(?!^)[[:upper:]]+#', replacement: $separator . '$0', subject: $string));
     }
 }
