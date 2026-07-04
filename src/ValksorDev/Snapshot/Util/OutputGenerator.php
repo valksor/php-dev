@@ -67,15 +67,91 @@ use const JSON_UNESCAPED_SLASHES;
 final class OutputGenerator
 {
     /**
+     * Raw file extensions that normalize to a different canonical extension.
+     * Extensions not listed here normalize to themselves.
+     *
+     * @var array<string, string>
+     */
+    private const array EXTENSION_ALIASES = [
+        'js' => 'javascript',
+        'ts' => 'typescript',
+        'py' => 'python',
+        'htm' => 'html',
+        'yml' => 'yaml',
+        'md' => 'markdown',
+        'sh' => 'bash',
+        'zsh' => 'bash',
+        'fish' => 'bash',
+        'rs' => 'rust',
+        'rb' => 'ruby',
+        'el' => 'emacs',
+    ];
+
+    /**
+     * Canonical (normalized) extension to human-readable language label.
+     *
+     * @var array<string, string>
+     */
+    private const array EXTENSION_LANGUAGES = [
+        'php' => 'PHP',
+        'javascript' => 'JavaScript',
+        'typescript' => 'TypeScript',
+        'python' => 'Python',
+        'html' => 'HTML',
+        'css' => 'CSS',
+        'scss' => 'SCSS',
+        'sass' => 'Sass',
+        'less' => 'Less',
+        'json' => 'JSON',
+        'xml' => 'XML',
+        'yaml' => 'YAML',
+        'markdown' => 'Markdown',
+        'sql' => 'SQL',
+        'bash' => 'Shell',
+        'txt' => 'Text',
+        'log' => 'Log',
+        'ini' => 'INI',
+        'conf' => 'Config',
+        'dockerfile' => 'Docker',
+        'gitignore' => 'Git',
+        'eslintrc' => 'ESLint',
+        'prettierrc' => 'Prettier',
+        'editorconfig' => 'EditorConfig',
+        'vue' => 'Vue',
+        'svelte' => 'Svelte',
+        'jsx' => 'React',
+        'tsx' => 'React',
+        'go' => 'Go',
+        'rust' => 'Rust',
+        'java' => 'Java',
+        'kt' => 'Kotlin',
+        'swift' => 'Swift',
+        'ruby' => 'Ruby',
+        'scala' => 'Scala',
+        'clj' => 'Clojure',
+        'hs' => 'Haskell',
+        'ml' => 'OCaml',
+        'elm' => 'Elm',
+        'dart' => 'Dart',
+        'lua' => 'Lua',
+        'r' => 'R',
+        'm' => 'Objective-C',
+        'pl' => 'Perl',
+        'tcl' => 'Tcl',
+        'vim' => 'Vim',
+        'emacs' => 'Emacs Lisp',
+    ];
+
+    /**
      * Generate MCP (Markdown Context Pack) format output.
      *
      * Creates a comprehensive markdown document containing project structure,
      * file contents organized by language, and detailed statistics. The output
      * is optimized for AI consumption with proper formatting and metadata.
      *
-     * @param string $projectName Name of the project being snapshotted
-     * @param array  $files       Array of file data with 'relative_path', 'content', 'size' keys
-     * @param array  $stats       Statistics array with 'files_processed' and 'total_size' keys
+     * @param string                     $projectName Name of the project being snapshotted
+     * @param list<array<string, mixed>> $files       Array of file data with 'relative_path', 'content', 'size' keys
+     * @param array<string, mixed>       $stats       Statistics array with 'files_processed' and 'total_size' keys
      *
      * @throws JsonException
      */
@@ -106,6 +182,8 @@ final class OutputGenerator
 
     /**
      * Generate the file contents section grouped by language.
+     *
+     * @param list<array<string, mixed>> $files
      */
     private static function generateFileContents(
         array $files,
@@ -157,6 +235,8 @@ final class OutputGenerator
     /**
      * Generate the MCP metadata section.
      *
+     * @param array<string, mixed> $stats
+     *
      * @throws JsonException
      */
     private static function generateMetadata(
@@ -181,6 +261,8 @@ final class OutputGenerator
 
     /**
      * Generate the project structure tree section.
+     *
+     * @param list<array<string, mixed>> $files
      */
     private static function generateProjectStructure(
         array $files,
@@ -217,6 +299,9 @@ final class OutputGenerator
 
     /**
      * Generate the summary statistics section.
+     *
+     * @param list<array<string, mixed>> $files
+     * @param array<string, mixed>       $stats
      */
     private static function generateSummary(
         array $files,
@@ -271,70 +356,22 @@ final class OutputGenerator
     private static function getExtensionLanguage(
         string $ext,
     ): string {
-        return match ($ext) {
-            'php' => 'PHP',
-            'javascript', 'js' => 'JavaScript',
-            'typescript', 'ts' => 'TypeScript',
-            'python', 'py' => 'Python',
-            'html', 'htm' => 'HTML',
-            'css' => 'CSS',
-            'scss' => 'SCSS',
-            'sass' => 'Sass',
-            'less' => 'Less',
-            'json' => 'JSON',
-            'xml' => 'XML',
-            'yaml', 'yml' => 'YAML',
-            'markdown', 'md' => 'Markdown',
-            'sql' => 'SQL',
-            'bash', 'sh', 'zsh', 'fish' => 'Shell',
-            'txt' => 'Text',
-            'log' => 'Log',
-            'ini' => 'INI',
-            'conf' => 'Config',
-            'dockerfile' => 'Docker',
-            'gitignore' => 'Git',
-            'eslintrc' => 'ESLint',
-            'prettierrc' => 'Prettier',
-            'editorconfig' => 'EditorConfig',
-            'vue' => 'Vue',
-            'svelte' => 'Svelte',
-            'jsx', 'tsx' => 'React',
-            'go' => 'Go',
-            'rs' => 'Rust',
-            'java' => 'Java',
-            'kt' => 'Kotlin',
-            'swift' => 'Swift',
-            'rb' => 'Ruby',
-            'scala' => 'Scala',
-            'clj' => 'Clojure',
-            'hs' => 'Haskell',
-            'ml' => 'OCaml',
-            'elm' => 'Elm',
-            'dart' => 'Dart',
-            'lua' => 'Lua',
-            'r' => 'R',
-            'm' => 'Objective-C',
-            'pl' => 'Perl',
-            'tcl' => 'Tcl',
-            'vim' => 'Vim',
-            'emacs' => 'Emacs Lisp',
-            default => strtoupper($ext),
-        };
+        return self::EXTENSION_LANGUAGES[$ext] ?? strtoupper($ext);
     }
 
     /**
      * Get normalized file extension from file path.
      *
-     * Extracts and normalizes file extensions, handling special cases
-     * and mapping common variations to standard forms.
+     * Extracts and normalizes file extensions, mapping common aliases (js,
+     * ts, md, ...) to their canonical form. Files without an extension are
+     * treated as plain text.
      *
      * @param string $path File path
      */
     private static function getFileExtension(
         string $path,
     ): string {
-        $basename = basename($path);
-        $parts = explode('.', $basename);
+        $parts = explode('.', basename($path));
 
         if (1 === count($parts)) {
             return 'txt';
@@ -342,59 +379,15 @@ final class OutputGenerator
 
         $ext = strtolower(end($parts));
 
-        // Handle special cases and common mappings
-        return match ($ext) {
-            'js' => 'javascript',
-            'jsx' => 'jsx',
-            'ts' => 'typescript',
-            'tsx' => 'tsx',
-            'py' => 'python',
-            'php' => 'php',
-            'html', 'htm' => 'html',
-            'css' => 'css',
-            'scss' => 'scss',
-            'sass' => 'sass',
-            'less' => 'less',
-            'json' => 'json',
-            'xml' => 'xml',
-            'yaml', 'yml' => 'yaml',
-            'md' => 'markdown',
-            'sql' => 'sql',
-            'sh', 'bash', 'zsh', 'fish' => 'bash',
-            'vue' => 'vue',
-            'svelte' => 'svelte',
-            'go' => 'go',
-            'rs' => 'rust',
-            'java' => 'java',
-            'kt' => 'kt',
-            'swift' => 'swift',
-            'rb' => 'ruby',
-            'scala' => 'scala',
-            'clj' => 'clj',
-            'hs' => 'hs',
-            'ml' => 'ml',
-            'elm' => 'elm',
-            'dart' => 'dart',
-            'lua' => 'lua',
-            'r' => 'r',
-            'm' => 'm',
-            'pl' => 'pl',
-            'tcl' => 'tcl',
-            'vim' => 'vim',
-            'el' => 'emacs',
-            'dockerfile' => 'dockerfile',
-            'gitignore' => 'gitignore',
-            'eslintrc' => 'eslintrc',
-            'prettierrc' => 'prettierrc',
-            'editorconfig' => 'editorconfig',
-            default => $ext,
-        };
+        return self::EXTENSION_ALIASES[$ext] ?? $ext;
     }
 
     /**
      * Group files by their extension.
      *
-     * @return array<string, array>
+     * @param list<array<string, mixed>> $files
+     *
+     * @return array<string, list<array<string, mixed>>>
      */
     private static function groupFilesByExtension(
         array $files,

@@ -120,7 +120,7 @@ trait SnapshotTestTrait
                 'enabled' => true,
                 'max_files' => 100,
                 'max_lines' => 500,
-                'max_file_size' => 512,
+                'max_file_size' => 1048576,
                 'exclude' => ['vendor/', 'tests/', '.coverage/'],
             ],
         ];

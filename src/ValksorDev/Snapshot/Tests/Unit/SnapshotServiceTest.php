@@ -13,79 +13,166 @@
 namespace ValksorDev\Snapshot\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
-use ValksorDev\Snapshot\Service\SnapshotService;
+use ValksorDev\Snapshot\Tests\Support\SnapshotTestTrait;
+
+use function file_get_contents;
+use function file_put_contents;
+use function str_repeat;
+use function substr_count;
 
 /**
- * Tests for SnapshotService class.
+ * Tests for the SnapshotService scanning engine.
  *
- * Tests the core functionality of the MCP snapshot generation service.
+ * Exercises the real file-scanning behaviour: directory pruning, the size /
+ * count / line limits, configuration-vs-CLI precedence and comment stripping.
  */
 final class SnapshotServiceTest extends TestCase
 {
-    private SnapshotService $snapshotService;
+    use SnapshotTestTrait;
 
-    public function testIsRunningReturnsFalseInitially(): void
+    public function testAnchoredGlobExcludeDoesNotPruneNestedDirectories(): void
     {
-        $this->assertFalse($this->snapshotService->isRunning());
-    }
+        // 'config/**' must exclude only a top-level config/, never a nested one.
+        $dir = $this->createTestDirectory(['config/top.php', 'app/config/nested.php']);
+        $output = $this->outputPath();
 
-    public function testReloadDoesNothing(): void
-    {
-        // The reload method should not throw any exceptions
-        $this->snapshotService->reload();
-        $this->assertTrue(true); // If we reach here, reload() worked
-    }
-
-    public function testRemovePidFile(): void
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'test_pid_');
-        file_put_contents($tempFile, '12345');
-
-        $this->assertFileExists($tempFile);
-
-        $this->snapshotService->removePidFile($tempFile);
-
-        $this->assertFileDoesNotExist($tempFile);
-    }
-
-    public function testRemovePidFileDoesNotFailIfFileDoesNotExist(): void
-    {
-        $nonExistentFile = '/tmp/non_existent_pid_file_' . uniqid('', true);
-
-        // This should not throw an exception and file should not exist afterwards
-        $this->snapshotService->removePidFile($nonExistentFile);
-        $this->assertFileDoesNotExist($nonExistentFile);
-    }
-
-    public function testStopSetsRunningToFalse(): void
-    {
-        // This is a simple test since isRunning is private
-        // In a real test, we'd need to start the service first
-        $this->snapshotService->stop();
-        $this->assertFalse($this->snapshotService->isRunning());
-    }
-
-    public function testWritePidFile(): void
-    {
-        $tempFile = tempnam(sys_get_temp_dir(), 'test_pid_');
-
-        $this->snapshotService->writePidFile($tempFile);
-
-        $this->assertFileExists($tempFile);
-        $content = file_get_contents($tempFile);
-        $this->assertIsNumeric($content);
-        $this->assertGreaterThan(0, (int) $content);
-
-        unlink($tempFile);
-    }
-
-    protected function setUp(): void
-    {
-        $parameterBag = new ParameterBag([
-            'kernel.project_dir' => '/fake/project/root',
+        $result = $this->createSnapshotService($dir, [
+            'valksor.snapshot.options' => [
+                'enabled' => true,
+                'max_files' => 100,
+                'max_lines' => 500,
+                'max_file_size' => 1048576,
+                'exclude' => ['config/**'],
+            ],
+        ])->start([
+            'paths' => [$dir],
+            'output_file' => $output,
         ]);
 
-        $this->snapshotService = new SnapshotService($parameterBag);
+        self::assertSame(0, $result);
+        $this->assertFileContains($output, ['app/config/nested.php'], ['config/top.php']);
+    }
+
+    public function testCliMaxFilesOverridesConfiguredValue(): void
+    {
+        // Configured limit is 100, but the CLI passes 1 → only one file kept.
+        $dir = $this->createTestDirectory(['a.php', 'b.php', 'c.php']);
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+            'max_files' => 1,
+        ]);
+
+        self::assertSame(0, $result);
+        self::assertSame(1, substr_count(file_get_contents($output), '#### '));
+    }
+
+    public function testGeneratesSnapshotContainingScannedFiles(): void
+    {
+        $dir = $this->createTestDirectory(['src/Foo.php', 'config/app.yaml']);
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+        ]);
+
+        self::assertSame(0, $result);
+        $this->assertFileContains($output, ['src/Foo.php', 'config/app.yaml']);
+    }
+
+    public function testIgnoredDirectoriesArePrunedWithoutDroppingSiblings(): void
+    {
+        $dir = $this->createTestDirectory(['vendor/Skipped.php', 'src/Kept.php', 'src/AlsoKept.php']);
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+        ]);
+
+        self::assertSame(0, $result);
+        $this->assertFileContains(
+            $output,
+            ['src/Kept.php', 'src/AlsoKept.php'],
+            ['vendor/Skipped.php'],
+        );
+    }
+
+    public function testMaxFileSizeExcludesLargeFiles(): void
+    {
+        $dir = $this->createTestDirectory();
+        file_put_contents($dir . '/small.txt', 'tiny');
+        file_put_contents($dir . '/big.txt', str_repeat('x', 5000));
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+            'max_file_size' => 1000,
+        ]);
+
+        self::assertSame(0, $result);
+        $this->assertFileContains($output, ['small.txt'], ['big.txt']);
+    }
+
+    public function testMaxLinesTruncatesContent(): void
+    {
+        $dir = $this->createTestDirectory();
+        file_put_contents($dir . '/long.txt', str_repeat("line\n", 50));
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+            'max_lines' => 10,
+        ]);
+
+        self::assertSame(0, $result);
+        self::assertStringContainsString('# [Truncated at 10 lines]', file_get_contents($output));
+    }
+
+    public function testReturnsZeroWhenNoFilesFound(): void
+    {
+        $dir = $this->createTestDirectory();
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+        ]);
+
+        self::assertSame(0, $result);
+    }
+
+    public function testStripCommentsRemovesPhpComments(): void
+    {
+        $dir = $this->createTestDirectory();
+        file_put_contents($dir . '/commented.php', "<?php\n// secret comment\n\$x = 1;\n");
+        $output = $this->outputPath();
+
+        $result = $this->createSnapshotService($dir)->start([
+            'paths' => [$dir],
+            'output_file' => $output,
+            'strip_comments' => true,
+        ]);
+
+        self::assertSame(0, $result);
+        $content = file_get_contents($output);
+        self::assertStringNotContainsString('secret comment', $content);
+        self::assertStringContainsString('$x = 1;', $content);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->snapshotTearDown();
+    }
+
+    private function outputPath(): string
+    {
+        // A writable path outside the scanned directory.
+        return $this->createTempFile('', 'mcp');
     }
 }

@@ -17,6 +17,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Valksor\Bundle\Command\AbstractCommand;
 use ValksorDev\Snapshot\Service\SnapshotService;
@@ -139,22 +140,19 @@ final class SnapshotGenerateCommand extends AbstractCommand
                 'max-files',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Maximum number of files to process (0 for unlimited)',
-                '500',
+                'Maximum number of files to process (0 for unlimited); defaults to the configured value',
             )
             ->addOption(
                 'max-size',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Maximum file size in KB (0 for unlimited)',
-                '1024',
+                'Maximum file size in KB (0 for unlimited); defaults to the configured value',
             )
             ->addOption(
                 'max-lines',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Maximum lines per file (0 for unlimited)',
-                '1000',
+                'Maximum lines per file (0 for unlimited); defaults to the configured value',
             )
             ->addOption(
                 'extensions',
@@ -220,6 +218,8 @@ final class SnapshotGenerateCommand extends AbstractCommand
      * format expected by the SnapshotService.
      *
      * @param array<string> $paths Array of valid paths to process
+     *
+     * @return array<string, mixed>
      */
     private function buildConfig(
         InputInterface $input,
@@ -234,14 +234,26 @@ final class SnapshotGenerateCommand extends AbstractCommand
             'strip_comments' => true,
         ];
 
-        // Convert numeric options with proper validation
-        $maxFiles = $this->parseNumericOption($input->getOption('max-files'));
-        $maxSize = $this->parseNumericOption($input->getOption('max-size'));
-        $maxLines = $this->parseNumericOption($input->getOption('max-lines'));
+        // Only set numeric limits that were explicitly provided; otherwise the
+        // service falls back to the configured valksor.snapshot.options values.
+        $maxFiles = $input->getOption('max-files');
 
-        $config['max_files'] = max($maxFiles, 0);
-        $config['max_file_size'] = max($maxSize, 0);
-        $config['max_lines'] = max($maxLines, 0);
+        if (null !== $maxFiles) {
+            $config['max_files'] = max($this->parseNumericOption($maxFiles), 0);
+        }
+
+        $maxSize = $input->getOption('max-size');
+
+        if (null !== $maxSize) {
+            // --max-size is given in KB; the service works in bytes.
+            $config['max_file_size'] = max($this->parseNumericOption($maxSize), 0) * 1024;
+        }
+
+        $maxLines = $input->getOption('max-lines');
+
+        if (null !== $maxLines) {
+            $config['max_lines'] = max($this->parseNumericOption($maxLines), 0);
+        }
 
         // Process extensions option
         $extensions = $input->getOption('extensions');
@@ -271,6 +283,8 @@ final class SnapshotGenerateCommand extends AbstractCommand
 
     /**
      * Parse comma-separated extensions into an array.
+     *
+     * @return list<string>
      */
     private function parseExtensions(
         string $extensions,
@@ -280,6 +294,10 @@ final class SnapshotGenerateCommand extends AbstractCommand
 
     /**
      * Parse ignore patterns into structured array.
+     *
+     * @param list<string> $patterns
+     *
+     * @return array<string, list<string>>
      */
     private function parseIgnorePatterns(
         array $patterns,
@@ -323,7 +341,7 @@ final class SnapshotGenerateCommand extends AbstractCommand
      * Parse numeric option with validation.
      */
     private function parseNumericOption(
-        $value,
+        mixed $value,
     ): int {
         if (is_array($value)) {
             $value = $value[0] ?? 0;
@@ -342,7 +360,7 @@ final class SnapshotGenerateCommand extends AbstractCommand
      */
     private function preparePaths(
         InputInterface $input,
-        $io,
+        SymfonyStyle $io,
     ): array {
         $paths = $input->getArgument('paths');
         $validPaths = [];

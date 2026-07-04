@@ -12,57 +12,86 @@
 
 namespace ValksorDev\Snapshot\Util;
 
+use PhpToken;
+use Valksor\Functions\Preg;
+
 use function explode;
 use function implode;
 use function in_array;
-use function preg_match;
-use function preg_replace;
 use function str_repeat;
 use function strlen;
 use function strpos;
 use function substr;
 use function trim;
 
+use const T_COMMENT;
+use const T_DOC_COMMENT;
+
 /**
- * Utility for processing file content to remove comments and empty lines.
+ * Utility for processing file content to remove comments.
  *
- * This class provides language-aware comment removal while preserving line numbers
- * to maintain accurate line references in the original source code.
+ * This class provides language-aware comment removal to keep AI snapshots
+ * compact. Comments (including multi-line blocks) are dropped rather than
+ * blanked, and whitespace-only lines left behind are emptied.
  *
  * Features:
  * - Multi-language comment detection (PHP, JavaScript, CSS, etc.)
- * - Preserves original line numbers by replacing removed content with markers
- * - Handles nested comments and complex patterns
- * - Maintains empty lines for structure when needed
+ * - PHP uses the native tokenizer, so attributes (#[...]) are never stripped
+ * - Comment-only and whitespace-only lines collapse to empty lines
  */
 final class ContentProcessor
 {
     /**
-     * Process file content by removing comments and optionally empty lines.
+     * Process file content by removing comments.
      *
-     * @param string $content        The original file content
-     * @param string $extension      File extension to determine comment style
-     * @param bool   $keepEmptyLines Whether to preserve empty lines structure
+     * @param string $content   The original file content
+     * @param string $extension File extension to determine comment style
      *
-     * @return string Processed content with line numbers preserved
+     * @return string Processed content with comments removed
      */
     public static function processContent(
         string $content,
         string $extension,
-        bool $keepEmptyLines = false,
     ): string {
         return match ($extension) {
-            'php' => self::processPhpContent($content, $keepEmptyLines),
-            'javascript', 'js', 'typescript', 'ts', 'jsx', 'tsx' => self::processJavaScriptContent($content, $keepEmptyLines),
-            'css' => self::processCssContent($content, $keepEmptyLines),
-            'html', 'htm' => self::processHtmlContent($content, $keepEmptyLines),
+            'php' => self::processPhpContent($content),
+            'javascript', 'js', 'typescript', 'ts', 'jsx', 'tsx' => self::processJavaScriptContent($content),
+            'css' => self::processCssContent($content),
+            'html', 'htm' => self::processHtmlContent($content),
             'json' => $content, // JSON has no comments
-            'xml' => self::processXmlContent($content, $keepEmptyLines),
-            'yaml', 'yml' => self::processYamlContent($content, $keepEmptyLines),
-            'python', 'py' => self::processPythonContent($content, $keepEmptyLines),
-            'bash', 'sh', 'zsh', 'fish' => self::processShellContent($content, $keepEmptyLines),
-            default => self::processGenericContent($content, $keepEmptyLines),
+            'xml' => self::processXmlContent($content),
+            'yaml', 'yml' => self::processYamlContent($content),
+            'python', 'py' => self::processPythonContent($content),
+            'bash', 'sh', 'zsh', 'fish' => self::processShellContent($content),
+            default => self::processGenericContent($content),
         };
+    }
+
+    /**
+     * Blank out lines that contain only whitespace, preserving line count.
+     */
+    private static function blankWhitespaceOnlyLines(
+        string $content,
+    ): string {
+        $lines = explode("\n", $content);
+
+        foreach ($lines as $index => $line) {
+            if ('' === trim($line)) {
+                $lines[$index] = '';
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Shared UTF-8-safe preg helper (match/replace) from valksor/functions.
+     */
+    private static function preg(): Preg\Functions
+    {
+        static $preg = null;
+
+        return $preg ??= new Preg\Functions();
     }
 
     /**
@@ -70,7 +99,6 @@ final class ContentProcessor
      */
     private static function processCssContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         // CSS only has block comments (/* */)
         $lines = explode("\n", $content);
@@ -92,7 +120,7 @@ final class ContentProcessor
                 }
             }
 
-            $line = preg_replace('/\/\*.*?\*\//', '', $line);
+            $line = self::preg()->replace('/\/\*.*?\*\//', '', $line);
             $commentStart = strpos($line, '/*');
 
             if (false !== $commentStart) {
@@ -100,18 +128,10 @@ final class ContentProcessor
                 $line = substr($line, 0, $commentStart);
             }
 
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
-            }
-
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 
     /**
@@ -119,29 +139,20 @@ final class ContentProcessor
      */
     private static function processGenericContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         $lines = explode("\n", $content);
         $processedLines = [];
 
         foreach ($lines as $line) {
             // Remove common comment patterns
-            $line = preg_replace('/^\s*#.*$/', '', $line);  // Shell/Python style
-            $line = preg_replace('/^\s*\/\/.*$/', '', $line);  // C++ style
-            $line = preg_replace('/\/\*.*?\*\//', '', $line);  // C style block comments
-
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
-            }
+            $line = self::preg()->replace('/^\s*#.*$/', '', $line);  // Shell/Python style
+            $line = self::preg()->replace('/^\s*\/\/.*$/', '', $line);  // C++ style
+            $line = self::preg()->replace('/\/\*.*?\*\//', '', $line);  // C style block comments
 
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 
     /**
@@ -149,16 +160,8 @@ final class ContentProcessor
      */
     private static function processHtmlContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
-        // Remove HTML comments but preserve line structure
-        $content = preg_replace('/<!--.*?-->/s', '', $content);
-
-        if (!$keepEmptyLines) {
-            return preg_replace('/^\s*$/m', '', $content);
-        }
-
-        return $content;
+        return self::preg()->replace('/<!--.*?-->/s', '', $content);
     }
 
     /**
@@ -166,7 +169,6 @@ final class ContentProcessor
      */
     private static function processJavaScriptContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         $lines = explode("\n", $content);
         $processedLines = [];
@@ -260,93 +262,33 @@ final class ContentProcessor
                 $line = str_repeat(' ', strlen($line));
             }
 
-            // Trim whitespace if line is now empty or just whitespace
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
-            }
-
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 
     /**
      * Process PHP content by removing PHP comments.
+     *
+     * Uses the native PHP tokenizer so comment removal is lexically correct:
+     * `#[Attribute]` (T_ATTRIBUTE), `#` and `//` inside strings, and block
+     * comment markers within string literals or heredocs are never mistaken
+     * for comments. Each comment is replaced by the newlines it spanned so
+     * that subsequent line numbers stay aligned.
      */
     private static function processPhpContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
-        // First, remove block comments that span multiple lines
-        $content = preg_replace('/\/\*.*?\*\//s', '', $content);
+        $result = '';
 
-        // Then process line by line to remove single-line comments
-        $lines = explode("\n", $content);
-        $processedLines = [];
-
-        foreach ($lines as $line) {
-            $inString = false;
-            $stringChar = '';
-            $i = 0;
-            $lineLength = strlen($line);
-
-            while ($i < $lineLength) {
-                $char = $line[$i];
-
-                // Handle string contexts
-                if (!$inString && ('"' === $char || "'" === $char)) {
-                    $inString = true;
-                    $stringChar = $char;
-                    $i++;
-
-                    continue;
-                }
-
-                if ($inString && $char === $stringChar && (0 === $i || '\\' !== $line[$i - 1])) {
-                    $inString = false;
-                    $stringChar = '';
-                    $i++;
-
-                    continue;
-                }
-
-                // Skip content inside strings
-                if ($inString) {
-                    $i++;
-
-                    continue;
-                }
-
-                // Remove single-line comments (// and #)
-                if (('/' === $char && $i + 1 < $lineLength && '/' === $line[$i + 1])
-                    || ('#' === $char)) {
-                    $line = substr($line, 0, $i);
-
-                    break;
-                }
-
-                $i++;
-            }
-
-            // Trim whitespace if line is now empty or just whitespace
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                // Preserve as empty line
-                $line = '';
-            }
-
-            $processedLines[] = $line;
+        // Drop comments entirely (multi-line doc blocks collapse) so the output
+        // stays compact; T_ATTRIBUTE (#[...]) is a distinct token and is kept.
+        foreach (PhpToken::tokenize($content) as $token) {
+            $result .= $token->is([T_COMMENT, T_DOC_COMMENT]) ? '' : $token->text;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines($result);
     }
 
     /**
@@ -354,7 +296,6 @@ final class ContentProcessor
      */
     private static function processPythonContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         $lines = explode("\n", $content);
         $processedLines = [];
@@ -410,18 +351,10 @@ final class ContentProcessor
                 $i++;
             }
 
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
-            }
-
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 
     /**
@@ -429,30 +362,21 @@ final class ContentProcessor
      */
     private static function processShellContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         $lines = explode("\n", $content);
         $processedLines = [];
 
         foreach ($lines as $line) {
             // Remove comments after preserving leading spaces
-            if (preg_match('/^(\s*)([^#]*)(#.*)?$/', $line, $matches)) {
+            if (self::preg()->match('/^(\s*)([^#]*)(#.*)?$/', $line, $matches)) {
                 [,$leading, $content] = $matches;
                 $line = $leading . $content;
-            }
-
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
             }
 
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 
     /**
@@ -460,16 +384,8 @@ final class ContentProcessor
      */
     private static function processXmlContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
-        // Remove XML comments
-        $content = preg_replace('/<!--.*?-->/s', '', $content);
-
-        if (!$keepEmptyLines) {
-            return preg_replace('/^\s*$/m', '', $content);
-        }
-
-        return $content;
+        return self::preg()->replace('/<!--.*?-->/s', '', $content);
     }
 
     /**
@@ -477,29 +393,20 @@ final class ContentProcessor
      */
     private static function processYamlContent(
         string $content,
-        bool $keepEmptyLines,
     ): string {
         $lines = explode("\n", $content);
         $processedLines = [];
 
         foreach ($lines as $line) {
             // Remove comments after preserving leading spaces
-            if (preg_match('/^(\s*)([^#]*)(#.*)?$/', $line, $matches)) {
+            if (self::preg()->match('/^(\s*)([^#]*)(#.*)?$/', $line, $matches)) {
                 [,$leading,$content] = $matches;
                 $line = $leading . $content;
-            }
-
-            $trimmedLine = trim($line);
-
-            if (empty($trimmedLine) && !$keepEmptyLines) {
-                $line = '';
-            } elseif (empty($trimmedLine) && $keepEmptyLines) {
-                $line = '';
             }
 
             $processedLines[] = $line;
         }
 
-        return implode("\n", $processedLines);
+        return self::blankWhitespaceOnlyLines(implode("\n", $processedLines));
     }
 }

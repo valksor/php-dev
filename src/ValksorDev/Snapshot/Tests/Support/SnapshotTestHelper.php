@@ -99,7 +99,7 @@ final class SnapshotTestHelper
                 'enabled' => true,
                 'max_files' => 100,
                 'max_lines' => 500,
-                'max_file_size' => 512,
+                'max_file_size' => 1048576,
                 'exclude' => ['vendor/', 'tests/', '.coverage/'],
             ],
         ], $config));
@@ -119,10 +119,10 @@ final class SnapshotTestHelper
         string $content,
         string $extension = 'txt',
     ): string {
-        $tempFile = tempnam(sys_get_temp_dir(), 'snapshot_test_') . '.' . $extension;
+        $tempFile = tempnam(sys_get_temp_dir(), 'snapshot_test_');
 
-        // Rename to include extension
-        $finalFile = substr($tempFile, 0, -4) . '.' . $extension;
+        // Rename to include the extension.
+        $finalFile = $tempFile . '.' . $extension;
         rename($tempFile, $finalFile);
 
         file_put_contents($finalFile, $content);

@@ -20,119 +20,99 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use ValksorDev\Snapshot\Command\SnapshotGenerateCommand;
 use ValksorDev\Snapshot\Service\SnapshotService;
 
+use function array_diff;
+use function file_get_contents;
+use function file_put_contents;
+use function is_dir;
+use function is_file;
+use function mkdir;
+use function rmdir;
+use function scandir;
+use function substr_count;
+use function sys_get_temp_dir;
+use function uniqid;
+use function unlink;
+
 /**
- * Integration tests for SnapshotGenerateCommand class.
+ * Integration tests for SnapshotGenerateCommand.
  *
- * Tests the command-line interface for snapshot generation.
+ * Drives the command through CommandTester against a temporary project and
+ * asserts deterministically on the generated MCP output.
  */
 final class SnapshotGenerateCommandTest extends TestCase
 {
     private SnapshotGenerateCommand $command;
     private CommandTester $commandTester;
+    private string $outputFile;
     private ParameterBagInterface $parameterBag;
+    private string $projectDir;
 
     public function testCommandExists(): void
     {
-        $this->assertSame('valksor:snapshot', $this->command->getName());
-        $this->assertStringContainsString('Generate project snapshots', $this->command->getDescription());
+        self::assertSame('valksor:snapshot', $this->command->getName());
+        self::assertStringContainsString('Generate project snapshots', $this->command->getDescription());
     }
 
-    public function testCommandWithArguments(): void
+    public function testGeneratesSnapshotWithExpectedSections(): void
     {
-        $testDir = $this->parameterBag->get('kernel.project_dir');
-        mkdir($testDir, 0o755, true);
-
-        $testFile = $testDir . '/test.php';
-        file_put_contents($testFile, '<?php echo "Hello World";');
+        file_put_contents($this->projectDir . '/test.php', "<?php\n\necho 'Hello World';\n");
 
         $result = $this->commandTester->execute([
-            'paths' => [$testDir],
+            'paths' => [$this->projectDir],
+            '--output' => $this->outputFile,
         ]);
 
-        $this->assertSame(Command::SUCCESS, $result);
-        $output = $this->commandTester->getDisplay();
-        $this->assertStringContainsString('Snapshot generated:', $output);
+        self::assertSame(Command::SUCCESS, $result);
+        self::assertStringContainsString('Snapshot generated:', $this->commandTester->getDisplay());
+        self::assertFileExists($this->outputFile);
+
+        $content = file_get_contents($this->outputFile);
+        self::assertStringContainsString('mcp-metadata', $content);
+        self::assertStringContainsString('## Files', $content);
+        self::assertStringContainsString('## Summary', $content);
+        self::assertGreaterThanOrEqual(1, substr_count($content, '#### '));
     }
 
-    public function testCommandWithMaxOptions(): void
+    public function testMaxFilesLimitIsApplied(): void
     {
-        $testDir = $this->parameterBag->get('kernel.project_dir');
-        mkdir($testDir, 0o755, true);
-
-        $testFile = $testDir . '/test.php';
-        file_put_contents($testFile, '<?php echo "Hello World";');
+        file_put_contents($this->projectDir . '/a.php', "<?php\n\$a = 1;\n");
+        file_put_contents($this->projectDir . '/b.php', "<?php\n\$b = 2;\n");
+        file_put_contents($this->projectDir . '/c.php', "<?php\n\$c = 3;\n");
 
         $result = $this->commandTester->execute([
-            '--max-files' => 1,
-            '--max-size' => 1,
-            '--max-lines' => 10,
+            'paths' => [$this->projectDir],
+            '--output' => $this->outputFile,
+            '--max-files' => '1',
         ]);
 
-        $this->assertSame(Command::SUCCESS, $result);
-        $output = $this->commandTester->getDisplay();
-        // Command should succeed with options applied
-        $this->assertTrue(
-            str_contains($output, 'Snapshot generated:') || str_contains($output, 'No files found'),
-            'Output should contain either success message or warning about no files',
-        );
+        self::assertSame(Command::SUCCESS, $result);
+        self::assertSame(1, substr_count(file_get_contents($this->outputFile), '#### '));
     }
 
-    public function testCommandWithOutputOption(): void
+    public function testWarnsWhenNoFilesFound(): void
     {
-        $testDir = $this->parameterBag->get('kernel.project_dir');
-        mkdir($testDir, 0o755, true);
-
-        $testFile = $testDir . '/test.php';
-        file_put_contents($testFile, '<?php echo "Hello World";');
-
-        $outputFile = sys_get_temp_dir() . '/custom_snapshot_' . uniqid('', true) . '.mcp';
-
         $result = $this->commandTester->execute([
-            '--output' => $outputFile,
+            'paths' => [$this->projectDir],
+            '--output' => $this->outputFile,
         ]);
 
-        $this->assertSame(Command::SUCCESS, $result);
-        $output = $this->commandTester->getDisplay();
-        // Command should succeed and either generate file or warn about no files
-        $this->assertTrue(
-            file_exists($outputFile) || str_contains($output, 'No files found'),
-            'Either output file should exist or command should warn about no files',
-        );
-
-        if (file_exists($outputFile)) {
-            unlink($outputFile);
-        }
-    }
-
-    public function testCommandWithoutArguments(): void
-    {
-        // Create a temporary test directory with some files
-        $testDir = $this->parameterBag->get('kernel.project_dir');
-        mkdir($testDir, 0o755, true);
-
-        $testFile = $testDir . '/test.php';
-        file_put_contents($testFile, '<?php echo "Hello World";');
-
-        $result = $this->commandTester->execute([]);
-
-        $this->assertSame(Command::SUCCESS, $result);
-        $output = $this->commandTester->getDisplay();
-        // Command should succeed - either find files or warn about no files
-        $this->assertTrue(
-            str_contains($output, 'Snapshot generated:') || str_contains($output, 'No files found'),
-            'Output should contain either success message or warning about no files',
-        );
+        self::assertSame(Command::SUCCESS, $result);
+        self::assertStringContainsString('No files found', $this->commandTester->getDisplay());
     }
 
     protected function setUp(): void
     {
+        $this->projectDir = sys_get_temp_dir() . '/snapshot_test_' . uniqid('', true);
+        mkdir($this->projectDir, 0o755, true);
+        $this->outputFile = sys_get_temp_dir() . '/snapshot_out_' . uniqid('', true) . '.mcp';
+
         $this->parameterBag = new ParameterBag([
-            'kernel.project_dir' => sys_get_temp_dir() . '/snapshot_test_' . uniqid('', true),
+            'kernel.project_dir' => $this->projectDir,
             'valksor.snapshot.options' => [
                 'enabled' => true,
-                'max_files' => 10,
-                'max_lines' => 50,
-                'max_file_size' => 100,
+                'max_files' => 100,
+                'max_lines' => 500,
+                'max_file_size' => 1048576,
                 'exclude' => ['vendor/', '.git/'],
             ],
         ]);
@@ -143,9 +123,12 @@ final class SnapshotGenerateCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Clean up test directory
-        if (is_dir($this->parameterBag->get('kernel.project_dir'))) {
-            $this->removeDirectory($this->parameterBag->get('kernel.project_dir'));
+        if (is_dir($this->projectDir)) {
+            $this->removeDirectory($this->projectDir);
+        }
+
+        if (is_file($this->outputFile)) {
+            unlink($this->outputFile);
         }
     }
 

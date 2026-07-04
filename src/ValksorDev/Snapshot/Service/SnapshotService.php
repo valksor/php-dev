@@ -14,8 +14,10 @@ namespace ValksorDev\Snapshot\Service;
 
 use Exception;
 use FilesystemIterator;
+use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Valksor\Bundle\Service\PathFilter;
@@ -34,11 +36,9 @@ use function explode;
 use function file_get_contents;
 use function file_put_contents;
 use function filesize;
-use function getmypid;
 use function implode;
 use function is_array;
 use function is_dir;
-use function is_file;
 use function mkdir;
 use function pathinfo;
 use function realpath;
@@ -48,7 +48,6 @@ use function str_replace;
 use function strlen;
 use function strtolower;
 use function substr_count;
-use function unlink;
 
 use const PATHINFO_EXTENSION;
 
@@ -68,17 +67,13 @@ use const PATHINFO_EXTENSION;
  * - MCP format output generation
  * - Comprehensive file type support
  *
- * Use Cases:
- * - AI code analysis and review
- * - Project documentation generation
- * - Code base summarization
- * - Knowledge base creation
+ * Configuration precedence: values from `valksor.snapshot.options` provide the
+ * baseline, and explicit command-line options override them.
  */
 final class SnapshotService
 {
     private PathFilter $fileFilter;
     private SymfonyStyle $io;
-    private bool $isRunning = false;
 
     public function __construct(
         private readonly ParameterBagInterface $parameterBag,
@@ -87,37 +82,19 @@ final class SnapshotService
         $this->fileFilter = PathFilter::createDefault($projectRoot);
     }
 
-    public function isRunning(): bool
-    {
-        return $this->isRunning;
-    }
-
-    public function reload(): void
-    {
-        // Snapshot service doesn't support reloading as it's a one-time operation
-    }
-
-    public function removePidFile(
-        string $pidFile,
-    ): void {
-        if (is_file($pidFile)) {
-            unlink($pidFile);
-        }
-    }
-
     public function setIo(
         SymfonyStyle $io,
     ): void {
         $this->io = $io;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function start(
         array $config,
     ): int {
-        $this->isRunning = true;
-
         try {
-            // Use multiple paths if provided, otherwise use default paths
             $projectRoot = $this->parameterBag->get('kernel.project_dir');
             $paths = $config['paths'] ?? $config['path'] ?? [$projectRoot];
 
@@ -140,22 +117,17 @@ final class SnapshotService
                 mkdir($outputDir, 0o755, true);
             }
 
-            // Get snapshot configuration from service-based structure (like hot reload)
-            $snapshotConfig = $this->parameterBag->get('valksor.snapshot.options');
+            // Merge configured defaults with the command-line options, then build
+            // the path filter from the resulting exclusion patterns.
+            $options = $this->resolveOptions($config);
+            $this->fileFilter = PathFilterHelper::createPathFilterWithExclusions($options['exclude'], $projectRoot);
 
-            // Create custom path filter with user exclusions (like hot reload)
-            $excludePatterns = $snapshotConfig['exclude'] ?? [];
-            $this->fileFilter = PathFilterHelper::createPathFilterWithExclusions($excludePatterns, $this->parameterBag->get('kernel.project_dir'));
-
-            // Scan files from all paths
-            $maxLines = $config['max_lines'] ?? 1000;
-            $files = $this->scanMultiplePaths($paths, $maxLines, $config);
+            $files = $this->scanMultiplePaths($paths, $options);
 
             if (empty($files)) {
                 if (isset($this->io)) {
                     $this->io->warning('No files found to process.');
                 }
-                $this->isRunning = false;
 
                 return 0;
             }
@@ -174,7 +146,6 @@ final class SnapshotService
                 if (isset($this->io)) {
                     $this->io->error("Failed to write output file: $outputFile");
                 }
-                $this->isRunning = false;
 
                 return 1;
             }
@@ -191,45 +162,30 @@ final class SnapshotService
                 );
             }
 
-            $this->isRunning = false;
-
             return 0;
         } catch (Exception $e) {
             if (isset($this->io)) {
                 $this->io->error('Snapshot generation failed: ' . $e->getMessage());
             }
-            $this->isRunning = false;
 
             return 1;
-        }
-    }
-
-    public function stop(): void
-    {
-        $this->isRunning = false;
-    }
-
-    public function writePidFile(
-        string $pidFile,
-    ): void {
-        $pid = getmypid();
-
-        if (false !== $pid) {
-            file_put_contents($pidFile, $pid);
         }
     }
 
     /**
      * Process a single file and return its data.
      *
-     * This method handles content reading, binary detection, and line limiting
-     * to ensure files are processed efficiently and safely for AI consumption.
+     * This method handles content reading, binary detection, comment stripping
+     * and line limiting so files are captured efficiently and safely.
+     *
+     * @param array<string, mixed> $options Resolved snapshot options
+     *
+     * @return array<string, mixed>|null
      */
     private function processFile(
         string $path,
         string $relativePath,
-        int $maxLines,
-        array $config,
+        array $options,
     ): ?array {
         try {
             $content = file_get_contents($path);
@@ -243,15 +199,14 @@ final class SnapshotService
                 return null;
             }
 
-            // Apply content processing if strip_comments is enabled
-            $stripComments = $config['strip_comments'] ?? false;
-
-            if ($stripComments) {
+            if ($options['strip_comments']) {
                 $extension = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
-                $content = ContentProcessor::processContent($content, $extension, true); // Preserve empty lines for structure
+                $content = ContentProcessor::processContent($content, $extension);
             }
 
             // Limit lines if specified
+            $maxLines = $options['max_lines'];
+
             if ($maxLines > 0) {
                 $lines = explode("\n", $content);
 
@@ -278,15 +233,44 @@ final class SnapshotService
     }
 
     /**
+     * Merge configured defaults (valksor.snapshot.options) with the command-line
+     * options. Command-line values win; otherwise the configured value applies.
+     *
+     * @param array<string, mixed> $config Command-line configuration
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveOptions(
+        array $config,
+    ): array {
+        $defaults = $this->parameterBag->get('valksor.snapshot.options');
+
+        if (!is_array($defaults)) {
+            $defaults = [];
+        }
+
+        return [
+            'max_files' => $config['max_files'] ?? $defaults['max_files'] ?? 500,
+            'max_file_size' => $config['max_file_size'] ?? $defaults['max_file_size'] ?? 1048576,
+            'max_lines' => $config['max_lines'] ?? $defaults['max_lines'] ?? 1000,
+            'exclude' => $defaults['exclude'] ?? [],
+            'strip_comments' => $config['strip_comments'] ?? false,
+        ];
+    }
+
+    /**
      * Scan files from a single path with recursive directory traversal.
      *
-     * This method uses RecursiveDirectoryIterator for efficient file system
-     * traversal and applies filtering rules to exclude unwanted files.
+     * Ignored directories are pruned before descent via a callback filter, so
+     * large trees such as vendor/ or node_modules/ are never walked.
+     *
+     * @param array<string, mixed> $options Resolved snapshot options
+     *
+     * @return list<array<string, mixed>>
      */
     private function scanFiles(
         string $path,
-        int $maxLines,
-        array $config,
+        array $options,
     ): array {
         $files = [];
         $processedCount = 0;
@@ -296,59 +280,65 @@ final class SnapshotService
             return $files;
         }
 
-        // Use RecursiveDirectoryIterator for better performance
-        $iterator = new RecursiveIteratorIterator(
+        $projectRoot = $this->parameterBag->get('kernel.project_dir');
+        $maxFileSize = $options['max_file_size'];
+        $maxFiles = $options['max_files'];
+
+        // Prune ignored directories before the recursive iterator descends
+        // into them, so excluded trees are never walked. Directories are matched
+        // by their project-relative path (the same anchored check applied to
+        // files) — not by basename — so anchored patterns such as `config/**`
+        // only prune the top-level directory and never a nested `apps/.../config`.
+        $filter = new RecursiveCallbackFilterIterator(
             new RecursiveDirectoryIterator($realPath, FilesystemIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::SELF_FIRST,
+            function (SplFileInfo $current) use ($projectRoot): bool {
+                if (!$current->isDir()) {
+                    return true;
+                }
+
+                $relativeDir = str_replace($projectRoot . '/', '', $current->getPathname());
+
+                return !$this->fileFilter->shouldIgnorePath($relativeDir);
+            },
         );
 
+        $iterator = new RecursiveIteratorIterator($filter, RecursiveIteratorIterator::SELF_FIRST);
+
         foreach ($iterator as $fileInfo) {
-            $path = $fileInfo->getPathname();
-
-            // Calculate relative path from project root, not from scan path
-            $projectRoot = $this->parameterBag->get('kernel.project_dir');
-            $relativePath = str_replace($projectRoot . '/', '', $path);
-
             if ($fileInfo->isDir()) {
-                // Use PathFilter like hot reload - directory filtering
-                if ($this->fileFilter->shouldIgnoreDirectory($fileInfo->getBasename())) {
-                    $iterator->next(); // Skip this directory
-                }
-            } else {
-                // Use PathFilter like hot reload - file filtering
-                if ($this->fileFilter->shouldIgnorePath($relativePath)) {
+                continue;
+            }
+
+            $filePath = $fileInfo->getPathname();
+            $relativePath = str_replace($projectRoot . '/', '', $filePath);
+
+            if ($this->fileFilter->shouldIgnorePath($relativePath)) {
+                continue;
+            }
+
+            // Apply the file-size cap (bytes).
+            if ($maxFileSize > 0) {
+                $size = filesize($filePath);
+
+                if (false !== $size && $size > $maxFileSize) {
                     continue;
                 }
+            }
 
-                // Apply additional snapshot-specific limits not handled by PathFilter
-                $maxFileSize = ($config['max_file_size'] ?? 1024) * 1024; // Convert KB to bytes
-
-                if ($maxFileSize > 0) {
-                    $size = filesize($path);
-
-                    if (false !== $size && $size > $maxFileSize) {
-                        continue;
-                    }
+            // Check file limit BEFORE processing this file
+            if ($maxFiles > 0 && $processedCount >= $maxFiles) {
+                if (isset($this->io)) {
+                    $this->io->warning("Maximum file limit ($maxFiles) reached. Processed $processedCount files.");
                 }
 
-                // Check file limit BEFORE processing this file
-                $maxFiles = $config['max_files'] ?? 500;
+                break;
+            }
 
-                if ($maxFiles > 0 && $processedCount >= $maxFiles) {
-                    if (isset($this->io)) {
-                        $this->io->warning("Maximum file limit ($maxFiles) reached. Processed $processedCount files.");
-                    }
+            $fileData = $this->processFile($filePath, $relativePath, $options);
 
-                    break;
-                }
-
-                // Process file
-                $fileData = $this->processFile($path, $relativePath, $maxLines, $config);
-
-                if (null !== $fileData) {
-                    $files[] = $fileData;
-                    $processedCount++;
-                }
+            if (null !== $fileData) {
+                $files[] = $fileData;
+                $processedCount++;
             }
         }
 
@@ -358,19 +348,21 @@ final class SnapshotService
     /**
      * Scan files from multiple paths and merge results.
      *
-     * This method handles path validation, file limit enforcement across
-     * all paths, and merges results while maintaining processing statistics.
+     * This method handles path validation and enforces the global file limit
+     * across all paths while merging the per-path results.
+     *
+     * @param list<string>         $paths
+     * @param array<string, mixed> $options Resolved snapshot options
+     *
+     * @return list<array<string, mixed>>
      */
     private function scanMultiplePaths(
         array $paths,
-        int $maxLines,
-        array $config,
+        array $options,
     ): array {
         $allFiles = [];
         $processedCount = 0;
-
-        // Get maxFiles from the dynamic config (from command line, not static config)
-        $maxFiles = $config['max_files'] ?? 500;
+        $maxFiles = $options['max_files'];
 
         foreach ($paths as $path) {
             // Check file limit before scanning each path
@@ -391,10 +383,8 @@ final class SnapshotService
                 continue;
             }
 
-            // Update path for validation and scanning
-            // Merge files from this path
-            foreach ($this->scanFiles($path, $maxLines, $config) as $file) {
-                // Check global file limit
+            // Merge files from this path, respecting the global file limit
+            foreach ($this->scanFiles($path, $options) as $file) {
                 if ($maxFiles > 0 && $processedCount >= $maxFiles) {
                     if (isset($this->io)) {
                         $this->io->warning("Maximum file limit ($maxFiles) reached. Processed $processedCount files.");
