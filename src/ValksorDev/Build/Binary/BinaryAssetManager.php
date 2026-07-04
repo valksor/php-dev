@@ -325,7 +325,8 @@ final class BinaryAssetManager
         string $version,
         string $targetDir,
     ): void {
-        $assetConfig = $this->toolConfig['assets'][0];
+        $assetConfig = $this->toolConfig['assets'][0]
+            ?? throw new RuntimeException(sprintf('No asset configuration defined for npm package %s.', $this->toolConfig['name']));
 
         // Use the actual npm package from configuration instead of hardcoded @esbuild
         $npmPackage = $this->toolConfig['npm_package'];
